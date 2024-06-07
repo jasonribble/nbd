@@ -1,21 +1,39 @@
-
 #[derive(Debug)]
 struct Contact {
-  _first_name: String,
-  _last_name: String,
-  _display_name: String,
-  _email: String,
-  _phone_number: String,
+    first_name: String,
+    last_name: String,
+    _display_name: String,
+    _email: String,
+    _phone_number: String,
+}
+
+impl Contact {
+    fn new(first_name: String, last_name: String, display_name: String, email: String, phone_number: String) -> Result<Contact, String> {
+        if first_name.to_lowercase() == "ERROR" {
+            return Err("First name cannot be 'ERROR'".to_string());
+        }
+
+        Ok(Contact {
+            first_name,
+            last_name,
+            _display_name: display_name,
+            _email: email,
+            _phone_number: phone_number,
+        })
+    }
 }
 
 fn main() {
-    let person = Contact {
-        _first_name: String::from("Jason"),
-        _last_name: String::from("Ribble"),
-        _display_name: String::from("Jason Ribble"),
-        _email: String::from("example@.com"),
-        _phone_number: String::from("123-456-7890"),
-    };
+    let person_result = Contact::new(
+        String::from("Jason"),
+        String::from("Ribble"),
+        String::from("Jason Ribble"),
+        String::from("example@.com"),
+        String::from("123-456-7890"),
+    );
 
-    println!("{:?}", person);
+    match person_result {
+        Ok(person) => println!("Hi, my name is {} {}", person.first_name, person.last_name),
+        Err(error) => println!("Error creating contact: {}", error),
+    }
 }
