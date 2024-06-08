@@ -6,15 +6,16 @@ struct Contact {
     _last_name: String,
     display_name: String,
     _email: String,
-    _phone_number: String,
+    _phone_number: PhoneNumber,
 }
 
+#[derive(Debug)]
 struct PhoneNumber(String);
 
 impl PhoneNumber {
-    fn new(phone_number: String) -> Result<PhoneNumber, String> {
+    fn new(phone_number: String) -> Result<Self, String> {
         if is_valid_phone_number(&phone_number) {
-            Ok(PhoneNumber(phone_number))
+            Ok(Self(phone_number))
         } else {
             Err("Invalid phone number format".to_string())
         }
@@ -35,16 +36,19 @@ impl Contact {
         last_name: String,
         email: String,
         phone_number: String,
-    ) -> Result<Contact, String> {
-        let display_name = format!("{} {}", first_name, last_name);
+    ) -> Self {
 
-        Ok(Contact {
+        let display_name = format!("{first_name} {last_name}");
+
+        let phone_number = PhoneNumber::new(phone_number).unwrap();
+
+        Self {
             _first_name: first_name,
             _last_name: last_name,
             display_name,
             _email: email,
             _phone_number: phone_number,
-        })
+        }
     }
 }
 
@@ -54,8 +58,7 @@ fn main() {
         String::from("Ribble"),
         String::from("Jason Ribble"),
         String::from("example@.com"),
-    )
-    .unwrap();
+    );
 
     println!("Hi, my name is {}", person.display_name);
 }
@@ -71,9 +74,7 @@ mod tests {
             String::from("Ribble"),
             String::from("example@.com"),
             String::from("123-456-7890"),
-        )
-        .unwrap();
-
+        );
         let display_name = "Jason Ribble".to_string();
         assert_eq!(person.display_name, display_name)
     }
