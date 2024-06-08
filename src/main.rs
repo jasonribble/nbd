@@ -7,7 +7,7 @@ struct Contact {
     _first_name: String,
     _last_name: String,
     display_name: String,
-    _email: String,
+    email: Email,
     phone_number: PhoneNumber,
 }
 
@@ -30,6 +30,25 @@ impl Display for PhoneNumber {
     }
 }
 
+#[derive(Debug)]
+struct Email(String);
+
+impl Email {
+    fn new(email: String) -> Result<Self, String> {
+        if is_valid_email(&email) {
+            Ok(Self(email))
+        } else {
+            Err("Invalid email format".to_string())
+        }
+    }
+}
+
+impl Display for Email {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 fn is_valid_phone_number(phone: &str) -> bool {
     let phone_regex = Regex::new(
         r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$",
@@ -47,14 +66,14 @@ fn is_valid_email(email: &str) -> bool {
 impl Contact {
     fn new(first_name: String, last_name: String, email: String, phone_number: String) -> Self {
         let display_name = format!("{first_name} {last_name}");
-
         let phone_number = PhoneNumber::new(phone_number).unwrap();
+        let email = Email::new(email).unwrap();
 
         Self {
             _first_name: first_name,
             _last_name: last_name,
             display_name,
-            _email: email,
+            email,
             phone_number,
         }
     }
@@ -64,12 +83,13 @@ fn main() {
     let person = Contact::new(
         String::from("Jason"),
         String::from("Ribble"),
-        String::from("Jason Ribble"),
+        String::from("john@example.com"),
         String::from("123-456-7890"),
     );
 
     println!("Hi, my name is {}", person.display_name);
     println!("My phone number is {}", person.phone_number);
+    println!("My email is {}", person.email);
 }
 
 #[cfg(test)]
@@ -81,7 +101,7 @@ mod tests {
         let person = Contact::new(
             String::from("Jason"),
             String::from("Ribble"),
-            String::from("example@.com"),
+            String::from("john@example.com"),
             String::from("123-456-7890"),
         );
         let display_name = "Jason Ribble".to_string();
@@ -134,7 +154,6 @@ mod tests {
     }
 
     #[test]
-
     fn test_valid_email() {
         let valid_emails = [
             "john@example.com",
