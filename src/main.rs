@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use regex::Regex;
 
 #[derive(Debug)]
@@ -6,23 +8,25 @@ struct Contact {
     _last_name: String,
     display_name: String,
     _email: String,
-    _phone_number: PhoneNumber,
+    phone_number: PhoneNumber,
 }
 
 #[derive(Debug)]
-struct PhoneNumber {
-    number: String,
-}
+struct PhoneNumber(String);
 
 impl PhoneNumber {
     fn new(phone_number: String) -> Result<Self, String> {
         if is_valid_phone_number(&phone_number) {
-            Ok(Self {
-                number: phone_number,
-            })
+            Ok(Self(phone_number))
         } else {
             Err("Invalid phone number format".to_string())
         }
+    }
+}
+
+impl Display for PhoneNumber {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -41,7 +45,6 @@ impl Contact {
         email: String,
         phone_number: String,
     ) -> Self {
-
         let display_name = format!("{first_name} {last_name}");
 
         let phone_number = PhoneNumber::new(phone_number).unwrap();
@@ -51,7 +54,7 @@ impl Contact {
             _last_name: last_name,
             display_name,
             _email: email,
-            _phone_number: phone_number,
+            phone_number,
         }
     }
 }
@@ -65,8 +68,7 @@ fn main() {
     );
 
     println!("Hi, my name is {}", person.display_name);
-    println!("My phone number is {}", person._phone_number.number)
-
+    println!("My phone number is {}", person.phone_number);
 }
 
 #[cfg(test)]
