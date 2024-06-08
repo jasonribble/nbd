@@ -1,3 +1,5 @@
+use regex::Regex;
+
 #[derive(Debug)]
 struct Contact {
     _first_name: String,
@@ -7,8 +9,33 @@ struct Contact {
     _phone_number: String,
 }
 
+struct PhoneNumber(String);
+
+impl PhoneNumber {
+    fn new(phone_number: String) -> Result<PhoneNumber, String> {
+        if is_valid_phone_number(&phone_number) {
+            Ok(PhoneNumber(phone_number))
+        } else {
+            Err("Invalid phone number format".to_string())
+        }
+    }
+}
+
+fn is_valid_phone_number(phone: &str) -> bool {
+    let phone_regex = Regex::new(
+        r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$",
+    )
+    .unwrap();
+    phone_regex.is_match(phone)
+}
+
 impl Contact {
-    fn new(first_name: String, last_name: String, email: String, phone_number: String) -> Result<Contact, String> {
+    fn new(
+        first_name: String,
+        last_name: String,
+        email: String,
+        phone_number: String,
+    ) -> Result<Contact, String> {
         let display_name = format!("{} {}", first_name, last_name);
 
         Ok(Contact {
@@ -27,11 +54,11 @@ fn main() {
         String::from("Ribble"),
         String::from("Jason Ribble"),
         String::from("example@.com"),
-    ).unwrap();
+    )
+    .unwrap();
 
     println!("Hi, my name is {}", person.display_name);
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -44,9 +71,55 @@ mod tests {
             String::from("Ribble"),
             String::from("example@.com"),
             String::from("123-456-7890"),
-        ).unwrap();
+        )
+        .unwrap();
 
         let display_name = "Jason Ribble".to_string();
         assert_eq!(person.display_name, display_name)
+    }
+
+    #[test]
+    fn test_valid_phone_numbers() {
+        let valid_numbers = [
+            "1234567890",
+            "123-456-7890",
+            "123.456.7890",
+            "(123) 456-7890",
+            "+1 (123) 456-7890",
+            "123-456-7890 ext. 1234",
+            "123.456.7890 x1234",
+            "(123) 456-7890 ex 1234",
+            "1234567890x123",
+        ];
+
+        for number in &valid_numbers {
+            assert!(
+                is_valid_phone_number(number),
+                "Valid number '{}' failed validation",
+                number
+            );
+        }
+    }
+
+    #[test]
+    fn test_invalid_phone_numbers() {
+        let invalid_numbers = [
+            "123456789",
+            "1234567890123",
+            "123-456-789",
+            "(123 456-7890",
+            "123.456.78901",
+            "123-456-7890 ext",
+            "123.456.7890 x",
+            "(123) 456-7890 ex abc",
+        ];
+
+        for number in &invalid_numbers {
+            assert!(
+                !is_valid_phone_number(number),
+                "Invalid number '{}' passed validation",
+                number
+            );
+        }
     }
 }
