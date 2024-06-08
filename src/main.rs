@@ -10,12 +10,16 @@ struct Contact {
 }
 
 #[derive(Debug)]
-struct PhoneNumber(String);
+struct PhoneNumber {
+    number: String,
+}
 
 impl PhoneNumber {
     fn new(phone_number: String) -> Result<Self, String> {
         if is_valid_phone_number(&phone_number) {
-            Ok(Self(phone_number))
+            Ok(Self {
+                number: phone_number,
+            })
         } else {
             Err("Invalid phone number format".to_string())
         }
@@ -57,10 +61,12 @@ fn main() {
         String::from("Jason"),
         String::from("Ribble"),
         String::from("Jason Ribble"),
-        String::from("example@.com"),
+        String::from("123-456-7890"),
     );
 
     println!("Hi, my name is {}", person.display_name);
+    println!("My phone number is {}", person._phone_number.number)
+
 }
 
 #[cfg(test)]
