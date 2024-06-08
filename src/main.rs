@@ -38,13 +38,13 @@ fn is_valid_phone_number(phone: &str) -> bool {
     phone_regex.is_match(phone)
 }
 
+fn is_valid_email(email: &str) -> bool {
+    let email_regex = regex::Regex::new(r"^[-\w\d._+]+@((?:[-\w\d]+\.)+[-\w\d]{2,}$)").unwrap();
+    email_regex.is_match(email)
+}
+
 impl Contact {
-    fn new(
-        first_name: String,
-        last_name: String,
-        email: String,
-        phone_number: String,
-    ) -> Self {
+    fn new(first_name: String, last_name: String, email: String, phone_number: String) -> Self {
         let display_name = format!("{first_name} {last_name}");
 
         let phone_number = PhoneNumber::new(phone_number).unwrap();
@@ -129,6 +129,48 @@ mod tests {
                 "Invalid number '{}' passed validation",
                 number
             );
+        }
+    }
+
+    #[test]
+
+    fn test_valid_email() {
+        let valid_emails = [
+            "john@example.com",
+            "john.doe@example.com",
+            "john_doe@example.co.uk",
+            "john123@example.com",
+            "john.doe+newsletter@example.com",
+        ];
+
+        for valid_email in valid_emails {
+            assert!(
+                is_valid_email(valid_email),
+                "Valid email '{}' passed validation",
+                valid_email
+            )
+        }
+    }
+
+    #[test]
+    fn test_invalid_email() {
+        let invalid_emails = [
+            "john@example",
+            "john.example.com",
+            "john@.com",
+            "john@example..com",
+            "john@example.c",
+            "john@example.com.",
+            "john doe@example.com",
+            "john@example.com!",
+        ];
+
+        for invalid_email in invalid_emails {
+            assert!(
+                !is_valid_email(invalid_email),
+                "Invalid email '{}' passed validation",
+                invalid_email
+            )
         }
     }
 }
