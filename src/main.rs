@@ -1,5 +1,5 @@
-mod types;
-use crate::types::Contact;
+mod contact;
+use crate::contact::Contact;
 
 fn main() {
     let person = Contact::new(
