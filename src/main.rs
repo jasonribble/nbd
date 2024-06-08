@@ -39,7 +39,8 @@ fn is_valid_phone_number(phone: &str) -> bool {
 }
 
 fn is_valid_email(email: &str) -> bool {
-    let email_regex = regex::Regex::new(r"^[-\w\d._+]+@((?:[-\w\d]+\.)+[-\w\d]{2,}$)").unwrap();
+    let pattern = r"^[\w\d][-\w\d+.]*@((?:[-\w\d]+\.)+[-\w\d]{2,})$";
+    let email_regex = regex::Regex::new(pattern).unwrap();
     email_regex.is_match(email)
 }
 
@@ -141,6 +142,7 @@ mod tests {
             "john_doe@example.co.uk",
             "john123@example.com",
             "john.doe+newsletter@example.com",
+            "a@meow.com",
         ];
 
         for valid_email in valid_emails {
@@ -162,7 +164,11 @@ mod tests {
             "john@example.c",
             "john@example.com.",
             "john doe@example.com",
+            " lohn doe@example.com",
             "john@example.com!",
+            "jaasdf asdf @.com",
+            ".test@example.com",
+            "+test@example.com",
         ];
 
         for invalid_email in invalid_emails {
