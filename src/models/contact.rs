@@ -1,4 +1,5 @@
-use crate::{email::Email, phone_number::PhoneNumber};
+use super::{email::Email, phone_number::PhoneNumber};
+
 
 #[derive(Debug)]
 pub struct Contact {
