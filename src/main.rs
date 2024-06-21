@@ -22,16 +22,10 @@ fn main() -> rusqlite::Result<()> {
         .with_prompt("Last name")
         .interact_text()
         .unwrap();
-    
-    let email = Input::new()
-      .with_prompt("Email")
-      .interact_text()
-      .unwrap();
 
-    let phone = Input::new()
-        .with_prompt("Phone")
-        .interact_text()
-        .unwrap();
+    let email = Input::new().with_prompt("Email").interact_text().unwrap();
+
+    let phone = Input::new().with_prompt("Phone").interact_text().unwrap();
 
     let person = Contact::new(first_name, last_name, email, phone);
 

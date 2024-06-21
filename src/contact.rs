@@ -1,10 +1,11 @@
 use companion_connect::validation::{is_valid_email, is_valid_phone_number};
 use std::fmt::Display;
+use rusqlite::types::{FromSql, FromSqlResult, ValueRef};
 
 #[derive(Debug)]
 pub struct Contact {
-    pub _first_name: String,
-    pub _last_name: String,
+    pub first_name: String,
+    pub last_name: String,
     pub display_name: String,
     pub email: Email,
     pub phone_number: PhoneNumber,
@@ -17,8 +18,8 @@ impl Contact {
         let email = Email::new(email).unwrap();
 
         Self {
-            _first_name: first_name,
-            _last_name: last_name,
+            first_name,
+            last_name,
             display_name,
             email,
             phone_number,
@@ -26,9 +27,8 @@ impl Contact {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct PhoneNumber(String);
-
 impl PhoneNumber {
     fn new(phone_number: String) -> Result<Self, String> {
         if is_valid_phone_number(&phone_number) {
@@ -39,13 +39,19 @@ impl PhoneNumber {
     }
 }
 
+impl FromSql for PhoneNumber {
+    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
+        value.as_str().map(|s| Self(s.to_string()))
+    }
+}
+
 impl Display for PhoneNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Email(String);
 
 impl Email {
@@ -57,10 +63,15 @@ impl Email {
         }
     }
 }
-
 impl Display for Email {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl FromSql for Email {
+    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
+        value.as_str().map(|s| Self(s.to_string()))
     }
 }
 #[cfg(test)]
