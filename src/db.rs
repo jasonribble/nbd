@@ -1,5 +1,6 @@
 use rusqlite::{Connection, params};
-use crate::contact::Contact;
+
+use crate::models::Contact;
 
 pub fn save_contact(conn: &Connection, contact: &Contact) -> Result<(), rusqlite::Error> {
     let query = "INSERT INTO contacts (first_name, last_name, display_name, email, phone_number)

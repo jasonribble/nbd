@@ -23,7 +23,7 @@ pub fn is_valid_email(email: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::validation::{is_valid_email, is_valid_phone_number};
+    use crate::utils::validation::{is_valid_email, is_valid_phone_number};
 
     #[test]
     fn test_valid_phone_numbers() {

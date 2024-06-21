@@ -1,12 +1,10 @@
 use dialoguer::Input;
 
-mod contact;
+mod models;
+mod utils;
 mod db;
-mod phone_number;
-mod email;
-mod validation;
 
-use crate::contact::Contact;
+use models::Contact;
 use rusqlite::Connection;
 
 fn main() -> rusqlite::Result<()> {

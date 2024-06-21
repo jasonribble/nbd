@@ -1,7 +1,8 @@
 use std::fmt::Display;
 use rusqlite::types::{FromSql, FromSqlResult, ToSqlOutput, ValueRef, ToSql};
 
-use crate::validation::is_valid_phone_number;
+use crate::utils::is_valid_phone_number;
+
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct PhoneNumber(String);
@@ -37,8 +38,9 @@ impl ToSql for PhoneNumber {
 #[cfg(test)]
 mod tests {
     use rusqlite::types::{FromSql, ToSql, ToSqlOutput, ValueRef};
-    use crate::phone_number::PhoneNumber;
 
+    use crate::models::phone_number::PhoneNumber;
+    
     #[test]
     fn test_phone_number_new_valid() {
         let valid_number = "1234567890".to_string();
