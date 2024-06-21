@@ -2,6 +2,7 @@ use dialoguer::Input;
 
 mod contact;
 mod utils;
+mod phone_number;
 
 use crate::contact::Contact;
 use rusqlite::Connection;
