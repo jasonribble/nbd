@@ -27,7 +27,7 @@ impl Contact {
 }
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Contact;
 
     #[test]
     fn test_display_name() {
