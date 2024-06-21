@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use rusqlite::types::{FromSql, FromSqlResult, ToSqlOutput, ValueRef, ToSql};
-use companion_connect::validation::is_valid_phone_number;
+
+use crate::validation::is_valid_phone_number;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct PhoneNumber(String);
