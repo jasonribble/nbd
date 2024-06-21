@@ -37,8 +37,10 @@ pub fn create_contacts_table(conn: &Connection) -> Result<(), rusqlite::Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::save_contact;
+    use crate::models::Contact;
     use rusqlite::{Connection, Result};
+
     fn setup_test_db() -> Result<Connection> {
         let conn = Connection::open_in_memory()?;
         conn.execute(

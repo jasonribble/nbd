@@ -1,14 +1,14 @@
 use std::fmt::Display;
 use rusqlite::{types::{FromSql, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
-use crate::utils::is_valid_email;
+use crate::utils;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Email(String);
 
 impl Email {
     pub (crate) fn new(email: String) -> Result<Self, String> {
-        if is_valid_email(&email) {
+        if utils::is_valid_email(&email) {
             Ok(Self(email))
         } else {
             Err("Invalid email format".to_string())
@@ -35,8 +35,8 @@ impl ToSql for Email {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use rusqlite::types::{FromSql, ToSql, ToSqlOutput, Value};
+    use super::Email;
+    use rusqlite::types::{FromSql, ToSql, ToSqlOutput, Value, ValueRef};
 
 
     #[test]
