@@ -1,9 +1,10 @@
 use dialoguer::Input;
 
 mod contact;
-mod utils;
+mod db;
 mod phone_number;
 mod email;
+mod validation;
 
 use crate::contact::Contact;
 use rusqlite::Connection;
@@ -11,7 +12,7 @@ use rusqlite::Connection;
 fn main() -> rusqlite::Result<()> {
     let conn = Connection::open("contacts.db")?;
 
-    utils::create_contacts_table(&conn)?;
+    db::create_contacts_table(&conn)?;
 
     println!("Welcome. Below insert the contact information");
 
@@ -36,7 +37,7 @@ fn main() -> rusqlite::Result<()> {
     println!("Contact number: {}", person.phone_number);
     println!("Contact email {}", person.email);
 
-    let _ = utils::save_contact(&conn, &person);
+    let _ = db::save_contact(&conn, &person);
 
     Ok(())
 }

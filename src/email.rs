@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use rusqlite::types::{FromSql, FromSqlResult, ValueRef};
-use companion_connect::validation::is_valid_email;
+use crate::validation::is_valid_email;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Email(String);

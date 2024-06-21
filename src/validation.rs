@@ -1,26 +1,24 @@
-pub mod validation {
-    use regex::Regex;
+use regex::Regex;
 
-    /// # Panics
-    ///
-    /// Will panic if an invalid phone number is provided
-    #[must_use]
-    pub fn is_valid_phone_number(phone: &str) -> bool {
-        let phone_pattern =
-            r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$";
-        let phone_regex = Regex::new(phone_pattern).unwrap();
-        phone_regex.is_match(phone)
-    }
+/// # Panics
+///
+/// Will panic if an invalid phone number is provided
+#[must_use]
+pub fn is_valid_phone_number(phone: &str) -> bool {
+    let phone_pattern =
+        r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$";
+    let phone_regex = Regex::new(phone_pattern).unwrap();
+    phone_regex.is_match(phone)
+}
 
-    /// # Panics
-    ///
-    /// Will panic if an invalid email is provided
-    #[must_use]
-    pub fn is_valid_email(email: &str) -> bool {
-        let email_pattern = r"^[\w\d][-\w\d+.]*@((?:[-\w\d]+\.)+[-\w\d]{2,})$";
-        let email_regex = regex::Regex::new(email_pattern).unwrap();
-        email_regex.is_match(email)
-    }
+/// # Panics
+///
+/// Will panic if an invalid email is provided
+#[must_use]
+pub fn is_valid_email(email: &str) -> bool {
+    let email_pattern = r"^[\w\d][-\w\d+.]*@((?:[-\w\d]+\.)+[-\w\d]{2,})$";
+    let email_regex = regex::Regex::new(email_pattern).unwrap();
+    email_regex.is_match(email)
 }
 
 #[cfg(test)]
