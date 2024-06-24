@@ -37,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: companion_connect
-          path: target/release/companion_connect
+          path: ${{ github.workspace }}/target/release/companion_connect
