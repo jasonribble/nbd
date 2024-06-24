@@ -33,8 +33,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build release
         run: cargo build --release
+      - name: Display current directory
+        run: pwd
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: companion_connect
-          path: ${{ github.workspace }}/target/release/companion_connect
+          path: ./target/release/companion_connect
