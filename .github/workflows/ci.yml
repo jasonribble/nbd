@@ -10,31 +10,34 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test_and_lint:
+  test:
+    name: cargo test
     runs-on: ubuntu-latest
-    container: rust:latest
-
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
-        run: cargo test --verbose
-      - name: Install Clippy
-        run: rustup component add clippy
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --all-features
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
       - name: Lint check
         run: cargo clippy -- -D clippy::pedantic -W clippy::nursery
-      - name: Build
-        run: cargo build --verbose
 
   build_and_upload:
-    needs: test_and_lint
-    container: rust:latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
       - name: Build release
         run: cargo build --release
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: companion_connect
-          path: connect/target/release/companion_connect
+          path: target/release/companion_connect
