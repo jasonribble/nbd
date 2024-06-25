@@ -33,14 +33,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
 
+      - name: Build release
+        run: cargo build --release
+
       - name: List Files
         run: ls -la
 
       - name: List Files
         run: ls -la target/release
-
-      - name: Build release
-        run: cargo build --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
