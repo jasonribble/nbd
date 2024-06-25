@@ -36,20 +36,8 @@ jobs:
       - name: Build release
         run: cargo build --release
 
-      - name: List Files
-        run: ls -la
-
-      - name: List Files
-        run: ls -la target/release
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: companion_connect
-          path: target/release/companion_connect
-
-      - name: Upload target
-        uses: actions/upload-artifact@v4
-        with:
-          name: companion_connect
-          path: target
+          name: connect
+          path: target/release/connect
