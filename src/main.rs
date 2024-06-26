@@ -1,14 +1,13 @@
 use dialoguer::Input;
 
+mod db;
 mod models;
 mod utils;
-mod db;
 
 use models::Contact;
-use rusqlite::Connection;
 
 fn main() -> rusqlite::Result<()> {
-    let conn = Connection::open("contacts.db")?;
+    let conn = db::connect()?;
 
     db::create_contacts_table(&conn)?;
 

@@ -1,6 +1,11 @@
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 
 use crate::models::Contact;
+
+pub fn connect() -> Result<Connection, rusqlite::Error> {
+    let conn = Connection::open("contacts.db")?;
+    Ok(conn)
+}
 
 pub fn save_contact(conn: &Connection, contact: &Contact) -> Result<(), rusqlite::Error> {
     let query = "INSERT INTO contacts (first_name, last_name, display_name, email, phone_number)
@@ -65,9 +70,8 @@ mod tests {
             "John".to_string(),
             "Doe".to_string(),
             "john@example.com".to_string(),
-            "1234567890".to_string()
+            "1234567890".to_string(),
         );
-
 
         save_contact(&conn, &contact)?;
 
