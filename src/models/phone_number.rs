@@ -1,8 +1,10 @@
-use std::fmt::Display;
-use rusqlite::types::{FromSql, FromSqlResult, ToSqlOutput, ValueRef, ToSql};
+use sqlx::{
+    sqlite::{SqliteArgumentValue, SqliteTypeInfo},
+    Encode, Type,
+};
+use std::{borrow::Cow, fmt::Display};
 
 use crate::utils;
-
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct PhoneNumber(String);
@@ -17,29 +19,33 @@ impl PhoneNumber {
     }
 }
 
-impl FromSql for PhoneNumber {
-    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
-        value.as_str().map(|s| Self(s.to_string()))
-    }
-}
-
 impl Display for PhoneNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl ToSql for PhoneNumber {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
-        Ok(ToSqlOutput::Borrowed(ValueRef::Text(self.0.as_bytes())))
+impl<'q> Encode<'q, sqlx::Sqlite> for &'q PhoneNumber {
+    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue<'q>>) -> sqlx::encode::IsNull {
+        args.push(SqliteArgumentValue::Text(Cow::Borrowed(self.0.as_str())));
+        sqlx::encode::IsNull::No
+    }
+}
+
+impl Type<sqlx::Sqlite> for PhoneNumber {
+    fn type_info() -> SqliteTypeInfo {
+        <&str as Type<sqlx::Sqlite>>::type_info()
+    }
+
+    fn compatible(ty: &SqliteTypeInfo) -> bool {
+        <&str as Type<sqlx::Sqlite>>::compatible(ty)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::PhoneNumber;
-    use rusqlite::types::{FromSql, ToSql, ToSqlOutput, ValueRef};
-    
+
     #[test]
     fn test_phone_number_new_valid() {
         let valid_number = "1234567890".to_string();
@@ -53,28 +59,8 @@ mod tests {
     }
 
     #[test]
-    fn test_phone_number_from_sql_valid() {
-        let value = ValueRef::Text(b"1234567890");
-        let result = PhoneNumber::column_result(value);
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), PhoneNumber("1234567890".to_string()));
-    }
-
-    #[test]
     fn test_phone_number_display() {
         let phone = PhoneNumber("1234567890".to_string());
         assert_eq!(format!("{}", phone), "1234567890");
-    }
-
-    #[test]
-    fn test_phone_number_to_sql() {
-        let phone = PhoneNumber("1234567890".to_string());
-        let result = phone.to_sql();
-        assert!(result.is_ok());
-        if let Ok(ToSqlOutput::Borrowed(ValueRef::Text(bytes))) = result {
-            assert_eq!(bytes, b"1234567890");
-        } else {
-            panic!("Unexpected ToSqlOutput variant");
-        }
     }
 }
