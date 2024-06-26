@@ -1,6 +1,5 @@
 use super::{email::Email, phone_number::PhoneNumber};
 
-
 #[derive(Debug)]
 pub struct Contact {
     pub first_name: String,
