@@ -1,5 +1,8 @@
-use std::fmt::Display;
-use rusqlite::{types::{FromSql, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
+use sqlx::{
+    sqlite::{SqliteArgumentValue, SqliteTypeInfo},
+    Encode, Type,
+};
+use std::{borrow::Cow, fmt::Display};
 
 use crate::utils;
 
@@ -7,7 +10,7 @@ use crate::utils;
 pub struct Email(String);
 
 impl Email {
-    pub (crate) fn new(email: String) -> Result<Self, String> {
+    pub(crate) fn new(email: String) -> Result<Self, String> {
         if utils::is_valid_email(&email) {
             Ok(Self(email))
         } else {
@@ -21,23 +24,26 @@ impl Display for Email {
     }
 }
 
-impl FromSql for Email {
-    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
-        value.as_str().map(|s| Self(s.to_string()))
+impl<'q> Encode<'q, sqlx::Sqlite> for &'q Email {
+    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue<'q>>) -> sqlx::encode::IsNull {
+        args.push(SqliteArgumentValue::Text(Cow::Borrowed(self.0.as_str())));
+        sqlx::encode::IsNull::No
     }
 }
 
-impl ToSql for Email {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
-        Ok(ToSqlOutput::Borrowed(ValueRef::Text(self.0.as_bytes())))
+impl Type<sqlx::Sqlite> for Email {
+    fn type_info() -> SqliteTypeInfo {
+        <&str as Type<sqlx::Sqlite>>::type_info()
+    }
+
+    fn compatible(ty: &SqliteTypeInfo) -> bool {
+        <&str as Type<sqlx::Sqlite>>::compatible(ty)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Email;
-    use rusqlite::types::{FromSql, ToSql, ToSqlOutput, Value, ValueRef};
-
 
     #[test]
     fn test_email_creation_valid() {
@@ -57,25 +63,5 @@ mod tests {
     fn test_email_display() {
         let email = Email::new("user@example.com".to_string()).unwrap();
         assert_eq!(format!("{}", email), "user@example.com");
-    }
-
-    #[test]
-    fn test_email_from_sql() {
-        let value = Value::Text("user@example.com".to_string());
-        let email = Email::column_result(ValueRef::from(&value));
-        assert!(email.is_ok());
-        assert_eq!(email.unwrap().to_string(), "user@example.com");
-    }
-
-    #[test]
-    fn test_email_number_to_sql() {
-        let email = Email("user@example.com".to_string());
-        let result = email.to_sql();
-        assert!(result.is_ok());
-        if let Ok(ToSqlOutput::Borrowed(ValueRef::Text(bytes))) = result {
-            assert_eq!(bytes, b"user@example.com");
-        } else {
-            panic!("Unexpected ToSqlOutput variant");
-        }
     }
 }

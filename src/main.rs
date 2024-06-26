@@ -6,10 +6,11 @@ mod utils;
 
 use models::Contact;
 
-fn main() -> rusqlite::Result<()> {
-    let conn = db::connect()?;
+#[tokio::main]
+async fn main() -> Result<(), sqlx::Error> {
+    let mut conn = db::connect().await?;
 
-    db::create_contacts_table(&conn)?;
+    db::create_contacts_table(&mut conn).await?;
 
     println!("Welcome. Below insert the contact information");
 
@@ -34,7 +35,7 @@ fn main() -> rusqlite::Result<()> {
     println!("Contact number: {}", person.phone_number);
     println!("Contact email {}", person.email);
 
-    let _ = db::save_contact(&conn, &person);
+    let _ = db::save_contact(&mut conn, &person);
 
     Ok(())
 }
