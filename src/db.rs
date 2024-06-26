@@ -1,18 +1,15 @@
 use crate::models::Contact;
-use sqlx::{sqlite::SqliteConnection, Connection};
+use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 
 const DB_URL: &str = "sqlite://contacts.db";
 
-pub async fn connect() -> Result<SqliteConnection, sqlx::Error> {
-    let conn = SqliteConnection::connect(DB_URL).await?;
-
-    Ok(conn)
+pub async fn connect() -> Result<SqlitePool, sqlx::Error> {
+    let database_url = DB_URL;
+    println!("Connected to {}", database_url);
+    SqlitePool::connect(&database_url).await
 }
 
-pub async fn save_contact(
-    conn: &mut SqliteConnection,
-    contact: &Contact,
-) -> Result<(), sqlx::Error> {
+pub async fn save_contact(pool: &SqlitePool, contact: &Contact) -> Result<(), sqlx::Error> {
     let query = "INSERT INTO contacts (first_name, last_name, display_name, email, phone_number)
                  VALUES (?, ?, ?, ?, ?)";
 
@@ -22,13 +19,13 @@ pub async fn save_contact(
         .bind(&contact.display_name)
         .bind(&contact.email)
         .bind(&contact.phone_number)
-        .execute(conn)
+        .execute(pool)
         .await?;
 
     Ok(())
 }
 
-pub async fn create_contacts_table(conn: &mut SqliteConnection) -> Result<(), sqlx::Error> {
+pub async fn create_contacts_table(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS contacts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,8 +36,20 @@ pub async fn create_contacts_table(conn: &mut SqliteConnection) -> Result<(), sq
             phone_number TEXT NOT NULL
         );",
     )
-    .execute(conn)
+    .execute(pool)
     .await?;
 
     Ok(())
+}
+
+pub async fn create_database() {
+    let db_url = DB_URL;
+
+    if !Sqlite::database_exists(&db_url).await.unwrap_or(false) {
+        println!("Creating database {}", db_url);
+        match Sqlite::create_database(&db_url).await {
+            Ok(_) => println!("Create db success"),
+            Err(error) => panic!("error: {}", error),
+        }
+    }
 }

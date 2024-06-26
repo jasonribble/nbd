@@ -8,9 +8,11 @@ use models::Contact;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    let mut conn = db::connect().await?;
+    db::create_database().await;
 
-    db::create_contacts_table(&mut conn).await?;
+    let pool = db::connect().await?;
+
+    db::create_contacts_table(&pool).await?;
 
     println!("Welcome. Below insert the contact information");
 
@@ -28,14 +30,14 @@ async fn main() -> Result<(), sqlx::Error> {
 
     let phone = Input::new().with_prompt("Phone").interact_text().unwrap();
 
-    let person = Contact::new(first_name, last_name, email, phone);
+    let contact = Contact::new(first_name, last_name, email, phone);
 
     println!();
-    println!("Contact name: {}", person.display_name);
-    println!("Contact number: {}", person.phone_number);
-    println!("Contact email {}", person.email);
+    println!("Contact name: {}", contact.display_name);
+    println!("Contact number: {}", contact.phone_number);
+    println!("Contact email {}", contact.email);
 
-    let _ = db::save_contact(&mut conn, &person);
+    db::save_contact(&pool, &contact).await?;
 
     Ok(())
 }
