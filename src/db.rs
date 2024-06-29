@@ -1,17 +1,17 @@
 use crate::models::Contact;
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
+use sqlx::{migrate::MigrateDatabase, PgPool, Postgres};
 
-const DB_URL: &str = "sqlite://contacts.db";
+const DB_URL: &str = "postgres://postgres:test@localhost/contacts";
 
-pub async fn connect() -> Result<SqlitePool, sqlx::Error> {
+pub async fn connect() -> Result<PgPool, sqlx::Error> {
     let database_url = DB_URL;
-    println!("Connected to {database_url}",);
-    SqlitePool::connect(database_url).await
+    println!("Connected to {database_url}");
+    PgPool::connect(database_url).await
 }
 
-pub async fn save_contact(pool: &SqlitePool, contact: &Contact) -> Result<(), sqlx::Error> {
+pub async fn save_contact(pool: &PgPool, contact: &Contact) -> Result<(), sqlx::Error> {
     let query = "INSERT INTO contacts (first_name, last_name, display_name, email, phone_number)
-                 VALUES (?, ?, ?, ?, ?)";
+                 VALUES ($1, $2, $3, $4, $5)";
 
     sqlx::query(query)
         .bind(&contact.first_name)
@@ -25,10 +25,10 @@ pub async fn save_contact(pool: &SqlitePool, contact: &Contact) -> Result<(), sq
     Ok(())
 }
 
-pub async fn create_contacts_table(pool: &SqlitePool) -> Result<(), sqlx::Error> {
+pub async fn create_contacts_table(pool: &PgPool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS contacts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
             display_name TEXT NOT NULL,
@@ -45,9 +45,9 @@ pub async fn create_contacts_table(pool: &SqlitePool) -> Result<(), sqlx::Error>
 pub async fn create_database() {
     let db_url = DB_URL;
 
-    if !Sqlite::database_exists(db_url).await.unwrap_or(false) {
+    if !Postgres::database_exists(db_url).await.unwrap_or(false) {
         println!("Creating database {db_url}");
-        match Sqlite::create_database(db_url).await {
+        match Postgres::create_database(db_url).await {
             Ok(()) => println!("Create db success"),
             Err(error) => panic!("error: {error}"),
         }
