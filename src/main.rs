@@ -1,13 +1,15 @@
 use dialoguer::Input;
 
 mod db;
+mod errors;
 mod models;
 mod utils;
 
+use errors::AppError;
 use models::Contact;
 
 #[tokio::main]
-async fn main() -> Result<(), sqlx::Error> {
+async fn main() -> Result<(), AppError> {
     db::create_database().await;
 
     let pool = db::connect().await?;
