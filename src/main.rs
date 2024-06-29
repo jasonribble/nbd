@@ -16,7 +16,7 @@ async fn main() -> Result<(), AppError> {
 
     db::create_contacts_table(&pool).await?;
 
-    println!("Welcome. Below insert the contact information");
+    println!("Welcome. You must run the local Dockerfile to have this work");
 
     let first_name = Input::new()
         .with_prompt("First name")
