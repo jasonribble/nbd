@@ -46,7 +46,7 @@ impl<'r> sqlx::Decode<'r, sqlx::Postgres> for PhoneNumber {
         value: PgValueRef<'r>,
     ) -> Result<Self, Box<dyn std::error::Error + 'static + Send + Sync>> {
         let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
-        Ok(PhoneNumber(s.to_string()))
+        Ok(Self(s.to_string()))
     }
 }
 
