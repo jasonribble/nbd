@@ -1,8 +1,8 @@
 use sqlx::{
-    sqlite::{SqliteArgumentValue, SqliteTypeInfo},
+    postgres::{PgArgumentBuffer, PgTypeInfo, PgValueRef},
     Encode, Type,
 };
-use std::{borrow::Cow, fmt::Display};
+use std::fmt::Display;
 
 use crate::utils;
 
@@ -24,20 +24,25 @@ impl Display for Email {
     }
 }
 
-impl<'q> Encode<'q, sqlx::Sqlite> for &'q Email {
-    fn encode_by_ref(&self, args: &mut Vec<SqliteArgumentValue<'q>>) -> sqlx::encode::IsNull {
-        args.push(SqliteArgumentValue::Text(Cow::Borrowed(self.0.as_str())));
-        sqlx::encode::IsNull::No
+impl<'q> Encode<'q, sqlx::Postgres> for &'q Email {
+    fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> sqlx::encode::IsNull {
+        <&str as Encode<sqlx::Postgres>>::encode(self.0.as_str(), buf)
     }
 }
 
-impl Type<sqlx::Sqlite> for Email {
-    fn type_info() -> SqliteTypeInfo {
-        <&str as Type<sqlx::Sqlite>>::type_info()
+impl Type<sqlx::Postgres> for Email {
+    fn type_info() -> PgTypeInfo {
+        <&str as Type<sqlx::Postgres>>::type_info()
     }
 
-    fn compatible(ty: &SqliteTypeInfo) -> bool {
-        <&str as Type<sqlx::Sqlite>>::compatible(ty)
+    fn compatible(ty: &PgTypeInfo) -> bool {
+        <&str as Type<sqlx::Postgres>>::compatible(ty)
+    }
+}
+impl<'r> sqlx::Decode<'r, sqlx::Postgres> for Email {
+    fn decode(value: PgValueRef<'r>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+        let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
+        Ok(Email(s.to_string()))
     }
 }
 
