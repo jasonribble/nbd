@@ -8,7 +8,7 @@ pub enum AppError {
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            AppError::DatabaseError(e) => write!(f, "Database error: {}", e),
+            Self::DatabaseError(error) => write!(f, "Database error: {error}"),
         }
     }
 }
@@ -17,7 +17,7 @@ impl std::error::Error for AppError {}
 
 impl From<sqlx::Error> for AppError {
     fn from(err: sqlx::Error) -> Self {
-        AppError::DatabaseError(err)
+        Self::DatabaseError(err)
     }
 }
 

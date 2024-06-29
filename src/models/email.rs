@@ -42,7 +42,7 @@ impl Type<sqlx::Postgres> for Email {
 impl<'r> sqlx::Decode<'r, sqlx::Postgres> for Email {
     fn decode(value: PgValueRef<'r>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
-        Ok(Email(s.to_string()))
+        Ok(Self(s.to_string()))
     }
 }
 
