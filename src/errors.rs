@@ -5,14 +5,16 @@ pub enum AppError {
     DatabaseError(sqlx::Error),
     InvalidEmail(String),
     InvalidPhoneNumber(String),
+    InvalidArguments,
 }
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::DatabaseError(error) => write!(f, "Database error: {error}"),
-            Self::InvalidEmail(error) => write!(f, "Invalid Email: {error}"),
-            Self::InvalidPhoneNumber(error) => write!(f, "Invalid Phone Number: {error}"),
+            Self::InvalidEmail(email) => write!(f, "{email} is invalid."),
+            Self::InvalidPhoneNumber(phone) => write!(f, "{phone} is invalid."),
+            Self::InvalidArguments => write!(f, "Invalid argument"),
         }
     }
 }
@@ -59,5 +61,19 @@ mod tests {
         let sqlx_error = SqlxError::PoolTimedOut;
         let app_error = AppError::from(sqlx_error);
         let _: Box<dyn std::error::Error> = Box::new(app_error);
+    }
+
+    #[test]
+    fn test_invalid_email_error_message() {
+        let invalid_email = "not-an-email".to_string();
+        let app_error = AppError::InvalidEmail(invalid_email);
+        assert_eq!(format!("{}", app_error), "not-an-email is invalid.");
+    }
+
+    #[test]
+    fn test_invalid_phone_number_error_message() {
+        let invalid_phone = "123".to_string();
+        let app_error = AppError::InvalidPhoneNumber(invalid_phone);
+        assert_eq!(format!("{}", app_error), "123 is invalid.");
     }
 }
