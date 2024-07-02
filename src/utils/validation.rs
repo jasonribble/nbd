@@ -1,28 +1,30 @@
 use regex::Regex;
 
-/// # Panics
-///
-/// Will panic if an invalid phone number is provided
-#[must_use]
-pub fn is_valid_phone_number(phone: &str) -> bool {
+fn is_valid_phone_number(phone: &str) -> bool {
     let phone_pattern =
         r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$";
     let phone_regex = Regex::new(phone_pattern).unwrap();
     phone_regex.is_match(phone)
 }
 
-/// # Panics
-///
-/// Will panic if an invalid email is provided
-#[must_use]
-pub fn is_valid_email(email: &str) -> bool {
+pub fn is_not_valid_phone_number(phone_number: &str) -> bool {
+    !is_valid_phone_number(phone_number)
+}
+
+fn is_valid_email(email: &str) -> bool {
     let email_pattern = r"^[\w\d][-\w\d+.]*@((?:[-\w\d]+\.)+[-\w\d]{2,})$";
     let email_regex = regex::Regex::new(email_pattern).unwrap();
     email_regex.is_match(email)
 }
 
+pub fn is_not_valid_email(email: &str) -> bool {
+    !is_valid_email(email)
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::utils::{is_not_valid_email, is_not_valid_phone_number};
+
     use super::{is_valid_email, is_valid_phone_number};
 
     #[test]
@@ -63,7 +65,7 @@ mod tests {
 
         for number in &invalid_numbers {
             assert!(
-                !is_valid_phone_number(number),
+                is_not_valid_phone_number(number),
                 "Invalid number '{}' passed validation",
                 number
             );
@@ -109,7 +111,7 @@ mod tests {
 
         for invalid_email in invalid_emails {
             assert!(
-                !is_valid_email(invalid_email),
+                is_not_valid_email(invalid_email),
                 "Invalid email '{}' passed validation",
                 invalid_email
             )

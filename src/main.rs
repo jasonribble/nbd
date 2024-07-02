@@ -32,7 +32,7 @@ async fn main() -> Result<(), AppError> {
 
     let phone = Input::new().with_prompt("Phone").interact_text().unwrap();
 
-    let contact = Contact::new(first_name, last_name, email, phone);
+    let contact = Contact::new(first_name, last_name, email, phone)?;
 
     println!();
     println!("Contact name: {}", contact.display_name);

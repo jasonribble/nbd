@@ -1,27 +1,38 @@
-use super::{email::Email, phone_number::PhoneNumber};
+use crate::{errors::AppError, utils};
 
 #[derive(Debug)]
 pub struct Contact {
     pub first_name: String,
     pub last_name: String,
     pub display_name: String,
-    pub email: Email,
-    pub phone_number: PhoneNumber,
+    pub email: String,
+    pub phone_number: String,
 }
 
 impl Contact {
-    pub fn new(first_name: String, last_name: String, email: String, phone_number: String) -> Self {
+    pub fn new(
+        first_name: String,
+        last_name: String,
+        email: String,
+        phone_number: String,
+    ) -> Result<Self, AppError> {
         let display_name = format!("{first_name} {last_name}");
-        let phone_number = PhoneNumber::new(phone_number).unwrap();
-        let email = Email::new(email).unwrap();
 
-        Self {
+        if utils::is_not_valid_email(&email) {
+            return Err(AppError::InvalidEmail(email));
+        }
+
+        if utils::is_not_valid_phone_number(&phone_number) {
+            return Err(AppError::InvalidPhoneNumber(phone_number));
+        }
+
+        Ok(Self {
             first_name,
             last_name,
             display_name,
             email,
             phone_number,
-        }
+        })
     }
 }
 #[cfg(test)]
@@ -37,6 +48,7 @@ mod tests {
             String::from("123-456-7890"),
         );
         let display_name = "Jason Ribble".to_string();
-        assert_eq!(person.display_name, display_name)
+
+        assert_eq!(person.unwrap().display_name, display_name)
     }
 }

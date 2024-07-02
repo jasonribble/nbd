@@ -3,12 +3,16 @@ use std::fmt;
 #[derive(Debug)]
 pub enum AppError {
     DatabaseError(sqlx::Error),
+    InvalidEmail(String),
+    InvalidPhoneNumber(String),
 }
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::DatabaseError(error) => write!(f, "Database error: {error}"),
+            Self::InvalidEmail(error) => write!(f, "Invalid Email: {error}"),
+            Self::InvalidPhoneNumber(error) => write!(f, "Invalid Phone Number: {error}"),
         }
     }
 }
