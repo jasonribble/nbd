@@ -1,17 +1,15 @@
 services:
-  db:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: contacts-db
-    environment:
-      POSTGRES_DB: contacts
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: test
+  database:
+    image: 'postgres'
     ports:
       - '5432:5432'
+    restart: always
+    environment:
+      - POSTGRES_DB=contacts
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      - database_data:/var/lib/postgresql/data
 volumes:
-  postgres_data:
+  database_data:
+    driver: local
