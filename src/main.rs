@@ -5,23 +5,25 @@ mod errors;
 mod models;
 mod utils;
 
+use db::{ContactRepo, PostgresContactRepo};
 use errors::AppError;
 use models::Contact;
+use sqlx::PgPool;
 
 #[tokio::main]
-async fn main() -> Result<(), AppError> {
-    db::create_database().await;
+async fn main() -> anyhow::Result<()> {
+    dotenvy::dotenv().ok();
 
-    let pool = db::connect().await?;
-
-    db::create_contacts_table(&pool).await?;
+    let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
 
     println!("Welcome. You must run a postgres container to have this work");
+
+    let contact_repo = PostgresContactRepo::new(pool);
 
     let contact = parse_arguments()?;
     println!("{contact:?}");
 
-    db::save_contact(&pool, &contact).await?;
+    contact_repo.save_contact(contact).await?;
 
     Ok(())
 }
