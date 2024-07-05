@@ -1,6 +1,6 @@
 use crate::{errors::AppError, utils};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Contact {
     pub first_name: String,
     pub last_name: String,
