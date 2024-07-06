@@ -23,7 +23,9 @@ async fn main() -> anyhow::Result<()> {
     let contact = parse_arguments()?;
     println!("{contact:?}");
 
-    contact_repo.save_contact(contact).await?;
+    let id = contact_repo.save_contact(contact).await?;
+
+    println!("{id}");
 
     Ok(())
 }
