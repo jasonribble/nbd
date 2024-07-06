@@ -21,11 +21,12 @@ async fn main() -> anyhow::Result<()> {
     let contact_repo = PostgresContactRepo::new(pool);
 
     let contact = parse_arguments()?;
-    println!("{contact:?}");
 
     let id = contact_repo.save_contact(contact).await?;
 
     println!("{id}");
+
+    contact_repo.get_all().await?;
 
     Ok(())
 }

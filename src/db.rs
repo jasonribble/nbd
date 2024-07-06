@@ -8,6 +8,7 @@ use sqlx::postgres::PgPool;
 #[async_trait]
 pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
+    async fn get_all(&self) -> anyhow::Result<()>;
 }
 
 pub struct PostgresContactRepo {
@@ -41,6 +42,22 @@ impl ContactRepo for PostgresContactRepo {
 
         Ok(id)
     }
+
+    async fn get_all(&self) -> anyhow::Result<()> {
+        let records = sqlx::query!(
+            r#"
+        SELECT id, first_name, last_name, display_name, email, phone_number
+        FROM contacts
+        ORDER BY id
+        "#
+        )
+        .fetch_all(&*self.pg_pool)
+        .await?;
+
+        println!("{:?}", records);
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -72,5 +89,19 @@ mod tests {
         let result = result.unwrap();
 
         assert_eq!(result, 1);
+    }
+
+    #[tokio::test]
+    async fn test_get_all_contacts() {
+        let mut mock_contact_repo = MockContactRepo::new();
+
+        mock_contact_repo
+            .expect_get_all()
+            .times(1)
+            .return_once(move || Ok(()));
+
+        let result = mock_contact_repo.get_all().await;
+
+        assert!(result.is_ok());
     }
 }
