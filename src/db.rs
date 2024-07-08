@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::models::{self, ContactWithId};
+use crate::models;
 use async_trait::async_trait;
 use sqlx::postgres::PgPool;
 
@@ -44,29 +44,16 @@ impl ContactRepo for PostgresContactRepo {
     }
 
     async fn get_all(&self) -> anyhow::Result<Vec<models::ContactWithId>> {
-        let records = sqlx::query!(
-            r#"
+        let get_contacts_query = r#"
         SELECT id, first_name, last_name, display_name, email, phone_number
         FROM contacts
         ORDER BY id
-        "#
-        )
-        .fetch_all(&*self.pg_pool)
-        .await?;
+        "#;
 
-        let contacts_with_id: Vec<models::ContactWithId> = records
-            .into_iter()
-            .map(|record| ContactWithId {
-                id: record.id,
-                contact: models::Contact {
-                    first_name: record.first_name,
-                    last_name: record.last_name,
-                    display_name: record.display_name,
-                    email: record.email,
-                    phone_number: record.phone_number,
-                },
-            })
-            .collect();
+        let contacts_with_id: Vec<models::ContactWithId> =
+            sqlx::query_as::<_, models::ContactWithId>(get_contacts_query)
+                .fetch_all(&*self.pg_pool)
+                .await?;
 
         Ok(contacts_with_id)
     }
@@ -76,19 +63,13 @@ impl ContactRepo for PostgresContactRepo {
 mod tests {
     use super::*;
     use mockall::predicate::*;
-    use models;
 
     #[tokio::test]
     async fn test_save_contact() {
         let mut mock_contact_repo = MockContactRepo::new();
 
-        let test_contact = models::Contact {
-            first_name: "John".to_string(),
-            last_name: "Smith".to_string(),
-            display_name: "John Smith".to_string(),
-            email: "johndoe@example.com".to_string(),
-            phone_number: "123-456-7890".to_string(),
-        };
+        let test_contact =
+            models::Contact::new("John", "Smith", "johndoe@example.com", "123-456-7890").unwrap();
 
         mock_contact_repo
             .expect_save_contact()
@@ -109,13 +90,8 @@ mod tests {
 
         let contacts = vec![models::ContactWithId {
             id: 1,
-            contact: models::Contact {
-                first_name: "John".to_string(),
-                last_name: "Doe".to_string(),
-                display_name: "John Doe".to_string(),
-                email: "john@example.com".to_string(),
-                phone_number: "1234567890".to_string(),
-            },
+            contact: models::Contact::new("John", "Doe", "johndoe@example.com", "1234567890")
+                .unwrap(),
         }];
 
         mock_contact_repo

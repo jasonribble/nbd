@@ -7,7 +7,6 @@ mod utils;
 
 use db::{ContactRepo, PostgresContactRepo};
 use errors::AppError;
-use models::Contact;
 use sqlx::PgPool;
 
 #[tokio::main]
@@ -33,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn parse_arguments() -> Result<Contact, AppError> {
+fn parse_arguments() -> Result<models::Contact, AppError> {
     let args: Vec<String> = env::args().collect();
 
     let has_correct_number_of_args = args.len() != 5;
@@ -42,10 +41,5 @@ fn parse_arguments() -> Result<Contact, AppError> {
         return Err(AppError::InvalidArguments);
     }
 
-    Contact::new(
-        args[1].clone(),
-        args[2].clone(),
-        args[3].clone(),
-        args[4].clone(),
-    )
+    models::Contact::new(&args[1], &args[2], &args[3], &args[4])
 }
