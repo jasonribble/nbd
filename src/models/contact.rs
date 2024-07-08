@@ -9,6 +9,12 @@ pub struct Contact {
     pub phone_number: String,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct ContactWithId {
+    pub id: i64,
+    pub contact: Contact,
+}
+
 impl Contact {
     pub fn new(
         first_name: String,

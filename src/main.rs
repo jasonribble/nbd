@@ -26,7 +26,9 @@ async fn main() -> anyhow::Result<()> {
 
     println!("{id}");
 
-    contact_repo.get_all().await?;
+    let all_contact = contact_repo.get_all().await?;
+
+    println!("{all_contact:?}");
 
     Ok(())
 }
