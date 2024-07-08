@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::models;
+use crate::models::{self, ContactWithId};
 use async_trait::async_trait;
 use sqlx::postgres::PgPool;
 
@@ -8,7 +8,7 @@ use sqlx::postgres::PgPool;
 #[async_trait]
 pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
-    async fn get_all(&self) -> anyhow::Result<()>;
+    async fn get_all(&self) -> anyhow::Result<Vec<models::ContactWithId>>;
 }
 
 pub struct PostgresContactRepo {
@@ -43,7 +43,7 @@ impl ContactRepo for PostgresContactRepo {
         Ok(id)
     }
 
-    async fn get_all(&self) -> anyhow::Result<()> {
+    async fn get_all(&self) -> anyhow::Result<Vec<models::ContactWithId>> {
         let records = sqlx::query!(
             r#"
         SELECT id, first_name, last_name, display_name, email, phone_number
@@ -54,9 +54,21 @@ impl ContactRepo for PostgresContactRepo {
         .fetch_all(&*self.pg_pool)
         .await?;
 
-        println!("{:?}", records);
+        let contacts_with_id: Vec<models::ContactWithId> = records
+            .into_iter()
+            .map(|record| ContactWithId {
+                id: record.id,
+                contact: models::Contact {
+                    first_name: record.first_name,
+                    last_name: record.last_name,
+                    display_name: record.display_name,
+                    email: record.email,
+                    phone_number: record.phone_number,
+                },
+            })
+            .collect();
 
-        Ok(())
+        Ok(contacts_with_id)
     }
 }
 
@@ -95,10 +107,21 @@ mod tests {
     async fn test_get_all_contacts() {
         let mut mock_contact_repo = MockContactRepo::new();
 
+        let contacts = vec![models::ContactWithId {
+            id: 1,
+            contact: models::Contact {
+                first_name: "John".to_string(),
+                last_name: "Doe".to_string(),
+                display_name: "John Doe".to_string(),
+                email: "john@example.com".to_string(),
+                phone_number: "1234567890".to_string(),
+            },
+        }];
+
         mock_contact_repo
             .expect_get_all()
             .times(1)
-            .return_once(move || Ok(()));
+            .return_once(move || Ok(contacts));
 
         let result = mock_contact_repo.get_all().await;
 

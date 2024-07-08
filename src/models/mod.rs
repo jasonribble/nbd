@@ -1,3 +1,3 @@
 mod contact;
 
-pub use contact::Contact;
+pub use contact::{Contact, ContactWithId};

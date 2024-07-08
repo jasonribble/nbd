@@ -46,7 +46,7 @@ This Rust project requires the following:
 Add a contact
 
 ```
-cargo run -- John Test john@example.com 9738978633
+cargo run -- John Test john@example.com 123-456-7890
 ```
 
 ## Cleanup
