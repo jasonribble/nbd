@@ -10,7 +10,7 @@ pub struct Contact {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow)]
-pub struct ContactWithId {
+pub struct Indexed {
     pub id: i64,
     #[sqlx(flatten)]
     pub contact: Contact,

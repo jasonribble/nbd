@@ -27,7 +27,9 @@ async fn main() -> anyhow::Result<()> {
 
     let all_contact = contact_repo.get_all().await?;
 
-    println!("{all_contact:?}");
+    let most_recent_contact = &all_contact[all_contact.len() - 1..];
+
+    println!("{most_recent_contact:?}");
 
     Ok(())
 }
