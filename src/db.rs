@@ -8,7 +8,7 @@ use sqlx::postgres::PgPool;
 #[async_trait]
 pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
-    async fn get_all(&self) -> anyhow::Result<Vec<models::ContactWithId>>;
+    async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
 }
 
 pub struct PostgresContactRepo {
@@ -43,15 +43,14 @@ impl ContactRepo for PostgresContactRepo {
         Ok(id)
     }
 
-    async fn get_all(&self) -> anyhow::Result<Vec<models::ContactWithId>> {
-        let get_contacts_query = r#"
-        SELECT id, first_name, last_name, display_name, email, phone_number
-        FROM contacts
-        ORDER BY id
-        "#;
+    async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>> {
+        let get_contacts_query =
+            "SELECT id, first_name, last_name, display_name, email, phone_number
+             FROM contacts
+             ORDER BY id";
 
-        let contacts_with_id: Vec<models::ContactWithId> =
-            sqlx::query_as::<_, models::ContactWithId>(get_contacts_query)
+        let contacts_with_id: Vec<models::IndexedContact> =
+            sqlx::query_as::<_, models::IndexedContact>(get_contacts_query)
                 .fetch_all(&*self.pg_pool)
                 .await?;
 
@@ -88,7 +87,7 @@ mod tests {
     async fn test_get_all_contacts() {
         let mut mock_contact_repo = MockContactRepo::new();
 
-        let contacts = vec![models::ContactWithId {
+        let contacts = vec![models::IndexedContact {
             id: 1,
             contact: models::Contact::new("John", "Doe", "johndoe@example.com", "1234567890")
                 .unwrap(),
