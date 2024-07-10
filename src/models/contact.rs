@@ -31,7 +31,7 @@ pub struct IndexedUpdate {
     update: Update,
 }
 impl IndexedUpdate {
-    fn new(id: i64) -> Self {
+    pub fn new(id: i64) -> Self {
         Self {
             id,
             update: Update {
@@ -42,6 +42,14 @@ impl IndexedUpdate {
                 phone_number: None,
             },
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.update.first_name.is_none()
+            && self.update.last_name.is_none()
+            && self.update.display_name.is_none()
+            && self.update.email.is_none()
+            && self.update.phone_number.is_none()
     }
 
     pub fn first_name(mut self, first_name: &str) -> Self {
@@ -70,6 +78,10 @@ impl IndexedUpdate {
     }
 
     pub fn build(self) -> IndexedUpdate {
+        if self.is_empty() {
+            panic!("At least one field must be set");
+        }
+
         IndexedUpdate {
             id: self.id,
             update: self.update,
@@ -144,5 +156,17 @@ mod tests {
         assert_eq!(edits.update.email, Some("new@email.com".to_string()));
         assert_eq!(edits.update.phone_number, None);
         assert_eq!(edits.update.display_name, None);
+    }
+
+    #[test]
+    #[should_panic(expected = "At least one field must be set")]
+    fn test_update_builder_must_have_one() {
+        let _ = IndexedUpdate::new(1).build();
+    }
+
+    #[test]
+    fn test_is_empty() {
+        let update = IndexedUpdate::new(1);
+        assert!(update.is_empty());
     }
 }
