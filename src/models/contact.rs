@@ -17,18 +17,18 @@ pub struct Indexed {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Update {
-    pub first_name: Option<String>,
-    pub last_name: Option<String>,
-    pub display_name: Option<String>,
-    pub email: Option<String>,
-    pub phone_number: Option<String>,
+struct Update {
+    first_name: Option<String>,
+    last_name: Option<String>,
+    display_name: Option<String>,
+    email: Option<String>,
+    phone_number: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct IndexedUpdate {
-    pub id: i64,
-    pub update: Update,
+    id: i64,
+    update: Update,
 }
 impl IndexedUpdate {
     fn new(id: i64) -> Self {
