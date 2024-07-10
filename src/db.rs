@@ -9,7 +9,7 @@ use sqlx::postgres::PgPool;
 pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
     async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
-    async fn update_contact(&self) -> anyhow::Result<()>;
+    async fn update_contact(&self, update: models::UpdateContact) -> anyhow::Result<()>;
 }
 
 pub struct PostgresContactRepo {
@@ -58,7 +58,8 @@ impl ContactRepo for PostgresContactRepo {
         Ok(contacts_with_id)
     }
 
-    async fn update_contact(&self) -> anyhow::Result<()> {
+    async fn update_contact(&self, update: models::UpdateContact) -> anyhow::Result<()> {
+        println!("{update:?}");
         Ok(())
     }
 }
@@ -112,12 +113,15 @@ mod tests {
     async fn test_update_contact() {
         let mut mock_contact_repo = MockContactRepo::new();
 
+        let edits = models::UpdateContact::new(1).email("new_email@example.com");
+
         mock_contact_repo
             .expect_update_contact()
             .times(1)
-            .return_once(move || Ok(()));
+            .with(eq(edits.clone()))
+            .return_once(|_| Ok(()));
 
-        let result = mock_contact_repo.update_contact().await;
+        let result = mock_contact_repo.update_contact(edits).await;
 
         assert!(result.is_ok());
     }
