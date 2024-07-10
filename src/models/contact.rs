@@ -31,7 +31,7 @@ pub struct IndexedUpdate {
     update: Update,
 }
 impl IndexedUpdate {
-    pub fn new(id: i64) -> Self {
+    pub const fn new(id: i64) -> Self {
         Self {
             id,
             update: Update {
@@ -44,7 +44,7 @@ impl IndexedUpdate {
         }
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.update.first_name.is_none()
             && self.update.last_name.is_none()
             && self.update.display_name.is_none()
@@ -54,35 +54,33 @@ impl IndexedUpdate {
 
     pub fn first_name(mut self, first_name: &str) -> Self {
         self.update.first_name = Some(first_name.to_string());
-        return self;
+        self
     }
 
     pub fn last_name(mut self, last_name: &str) -> Self {
         self.update.last_name = Some(last_name.to_string());
-        return self;
+        self
     }
 
     pub fn email(mut self, email: &str) -> Self {
         self.update.email = Some(email.to_string());
-        return self;
+        self
     }
 
     pub fn display_name(mut self, display_name: &str) -> Self {
         self.update.display_name = Some(display_name.to_string());
-        return self;
+        self
     }
 
     pub fn phone_number(mut self, phone_number: &str) -> Self {
         self.update.phone_number = Some(phone_number.to_string());
-        return self;
+        self
     }
 
-    pub fn build(self) -> IndexedUpdate {
-        if self.is_empty() {
-            panic!("At least one field must be set");
-        }
+    pub fn build(self) -> Self {
+        assert!(!self.is_empty(), "At least one field must be set");
 
-        IndexedUpdate {
+        Self {
             id: self.id,
             update: self.update,
         }
@@ -168,5 +166,12 @@ mod tests {
     fn test_is_empty() {
         let update = IndexedUpdate::new(1);
         assert!(update.is_empty());
+    }
+
+    #[test]
+    #[ignore]
+    #[should_panic(expected = "Must be built")]
+    fn test_new_update_must_have_one() {
+        let _ = IndexedUpdate::new(1);
     }
 }
