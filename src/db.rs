@@ -58,8 +58,28 @@ impl ContactRepo for PostgresContactRepo {
         Ok(contacts_with_id)
     }
 
-    async fn update_contact(&self, update: models::ContactBuilder) -> anyhow::Result<()> {
-        println!("{update:?}");
+    async fn update_contact(&self, contact: models::ContactBuilder) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"
+            UPDATE contacts
+            SET 
+                first_name = COALESCE($1, first_name),
+                last_name = COALESCE($2, last_name),
+                display_name = COALESCE($3, display_name),
+                email = COALESCE($4, email),
+                phone_number = COALESCE($5, phone_number)
+            WHERE id = $6
+            "#,
+            contact.update.first_name,
+            contact.update.last_name,
+            contact.update.display_name,
+            contact.update.email,
+            contact.update.phone_number,
+            contact.id
+        )
+        .fetch_all(&*self.pg_pool)
+        .await?;
+
         Ok(())
     }
 }
@@ -118,7 +138,7 @@ mod tests {
             .times(1)
             .return_once(|_| Ok(()));
 
-        let edits = models::ContactBuilder::new(1).email("new_email@example.com");
+        let edits = models::ContactBuilder::new(1).set_email("new_email@example.com");
 
         let result = mock_contact_repo.update_contact(edits).await;
 

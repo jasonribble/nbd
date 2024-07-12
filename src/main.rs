@@ -32,11 +32,11 @@ async fn main() -> anyhow::Result<()> {
     println!("{most_recent_contact:?}");
 
     let edits = models::ContactBuilder::new(id)
-        .first_name("New Name")
-        .last_name("Yep")
-        .email("completely@new.com")
-        .phone_number("1233211233")
-        .display_name("Nickname")
+        .set_first_name("New Name")
+        .set_last_name("Yep")
+        .set_email("completely@new.com")
+        .set_phone_number("1233211233")
+        .set_display_name("Nickname")
         .build()
         .unwrap();
 
