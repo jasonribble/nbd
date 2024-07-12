@@ -31,13 +31,14 @@ async fn main() -> anyhow::Result<()> {
 
     println!("{most_recent_contact:?}");
 
-    let edits = models::UpdateContact::new(id)
+    let edits = models::ContactBuilder::new(id)
         .first_name("New Name")
         .last_name("Yep")
         .email("completely@new.com")
         .phone_number("1233211233")
         .display_name("Nickname")
-        .build();
+        .build()
+        .unwrap();
 
     let _ = contact_repo.update_contact(edits).await;
 
