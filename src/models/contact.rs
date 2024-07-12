@@ -66,7 +66,7 @@ impl Builder {
 
     pub fn email(mut self, email: &str) -> Self {
         if utils::is_not_valid_email(email) {
-            self.errors.push(AppError::InvalidEmail(email.to_string()))
+            self.errors.push(AppError::InvalidEmail(email.to_string()));
         }
         self.update.email = Some(email.to_string());
         self
@@ -80,7 +80,7 @@ impl Builder {
     pub fn phone_number(mut self, phone_number: &str) -> Self {
         if utils::is_not_valid_phone_number(phone_number) {
             self.errors
-                .push(AppError::InvalidPhoneNumber(phone_number.to_string()))
+                .push(AppError::InvalidPhoneNumber(phone_number.to_string()));
         }
         self.update.phone_number = Some(phone_number.to_string());
         self
