@@ -17,18 +17,18 @@ pub struct Indexed {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-struct Update {
-    first_name: Option<String>,
-    last_name: Option<String>,
-    display_name: Option<String>,
-    email: Option<String>,
-    phone_number: Option<String>,
+pub struct Update {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub display_name: Option<String>,
+    pub email: Option<String>,
+    pub phone_number: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct Builder {
-    id: i64,
-    update: Update,
+    pub id: i64,
+    pub update: Update,
     errors: Vec<AppError>,
 }
 impl Builder {
@@ -54,17 +54,17 @@ impl Builder {
             && self.update.phone_number.is_none()
     }
 
-    pub fn first_name(mut self, first_name: &str) -> Self {
+    pub fn set_first_name(mut self, first_name: &str) -> Self {
         self.update.first_name = Some(first_name.to_string());
         self
     }
 
-    pub fn last_name(mut self, last_name: &str) -> Self {
+    pub fn set_last_name(mut self, last_name: &str) -> Self {
         self.update.last_name = Some(last_name.to_string());
         self
     }
 
-    pub fn email(mut self, email: &str) -> Self {
+    pub fn set_email(mut self, email: &str) -> Self {
         if utils::is_not_valid_email(email) {
             self.errors.push(AppError::InvalidEmail(email.to_string()));
         }
@@ -72,12 +72,12 @@ impl Builder {
         self
     }
 
-    pub fn display_name(mut self, display_name: &str) -> Self {
+    pub fn set_display_name(mut self, display_name: &str) -> Self {
         self.update.display_name = Some(display_name.to_string());
         self
     }
 
-    pub fn phone_number(mut self, phone_number: &str) -> Self {
+    pub fn set_phone_number(mut self, phone_number: &str) -> Self {
         if utils::is_not_valid_phone_number(phone_number) {
             self.errors
                 .push(AppError::InvalidPhoneNumber(phone_number.to_string()));
@@ -142,8 +142,8 @@ mod tests {
     #[test]
     fn test_contact_update_builder() {
         let edits = Builder::new(1)
-            .display_name("Nickname")
-            .phone_number("123-233-1221")
+            .set_display_name("Nickname")
+            .set_phone_number("123-233-1221")
             .build()
             .unwrap();
 
@@ -158,9 +158,9 @@ mod tests {
     #[test]
     fn test_contact_update_builder_2() {
         let edits = Builder::new(2)
-            .first_name("Mary")
-            .last_name("Smith")
-            .email("new@email.com")
+            .set_first_name("Mary")
+            .set_last_name("Smith")
+            .set_email("new@email.com")
             .build()
             .unwrap();
 
@@ -193,13 +193,13 @@ mod tests {
 
     #[test]
     fn test_invalid_email_builder() {
-        let result = Builder::new(1).email("invalid@example").build();
+        let result = Builder::new(1).set_email("invalid@example").build();
         assert!(result.is_err());
     }
 
     #[test]
     fn test_invalid_builder_phone_number() {
-        let result = Builder::new(1).phone_number("invalid number").build();
+        let result = Builder::new(1).set_phone_number("invalid number").build();
         assert!(result.is_err());
     }
 }
