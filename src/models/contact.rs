@@ -25,12 +25,13 @@ struct Update {
     phone_number: Option<String>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct IndexedUpdate {
+#[derive(Debug)]
+pub struct Builder {
     id: i64,
     update: Update,
+    errors: Vec<AppError>,
 }
-impl IndexedUpdate {
+impl Builder {
     pub const fn new(id: i64) -> Self {
         Self {
             id,
@@ -41,6 +42,7 @@ impl IndexedUpdate {
                 email: None,
                 phone_number: None,
             },
+            errors: Vec::new(),
         }
     }
 
@@ -63,6 +65,9 @@ impl IndexedUpdate {
     }
 
     pub fn email(mut self, email: &str) -> Self {
+        if utils::is_not_valid_email(email) {
+            self.errors.push(AppError::InvalidEmail(email.to_string()))
+        }
         self.update.email = Some(email.to_string());
         self
     }
@@ -73,17 +78,26 @@ impl IndexedUpdate {
     }
 
     pub fn phone_number(mut self, phone_number: &str) -> Self {
+        if utils::is_not_valid_phone_number(phone_number) {
+            self.errors
+                .push(AppError::InvalidPhoneNumber(phone_number.to_string()))
+        }
         self.update.phone_number = Some(phone_number.to_string());
         self
     }
 
-    pub fn build(self) -> Self {
+    pub fn build(self) -> Result<Self, Vec<AppError>> {
         assert!(!self.is_empty(), "At least one field must be set");
 
-        Self {
+        if !self.errors.is_empty() {
+            return Err(self.errors);
+        }
+
+        Ok(Self {
             id: self.id,
             update: self.update,
-        }
+            errors: self.errors,
+        })
     }
 }
 
@@ -115,7 +129,7 @@ impl Contact {
 }
 #[cfg(test)]
 mod tests {
-    use super::{Contact, IndexedUpdate};
+    use super::{Builder, Contact};
 
     #[test]
     fn test_display_name() {
@@ -127,10 +141,11 @@ mod tests {
 
     #[test]
     fn test_contact_update_builder() {
-        let edits = IndexedUpdate::new(1)
+        let edits = Builder::new(1)
             .display_name("Nickname")
             .phone_number("123-233-1221")
-            .build();
+            .build()
+            .unwrap();
 
         assert_eq!(edits.id, 1);
         assert_eq!(edits.update.display_name, Some("Nickname".to_string()));
@@ -142,11 +157,12 @@ mod tests {
 
     #[test]
     fn test_contact_update_builder_2() {
-        let edits = IndexedUpdate::new(2)
+        let edits = Builder::new(2)
             .first_name("Mary")
             .last_name("Smith")
             .email("new@email.com")
-            .build();
+            .build()
+            .unwrap();
 
         assert_eq!(edits.id, 2);
         assert_eq!(edits.update.first_name, Some("Mary".to_string()));
@@ -159,19 +175,31 @@ mod tests {
     #[test]
     #[should_panic(expected = "At least one field must be set")]
     fn test_update_builder_must_have_one() {
-        let _ = IndexedUpdate::new(1).build();
+        let _ = Builder::new(1).build();
     }
 
     #[test]
     fn test_is_empty() {
-        let update = IndexedUpdate::new(1);
-        assert!(update.is_empty());
+        let contact = Builder::new(1);
+        assert!(contact.is_empty());
     }
 
     #[test]
     #[ignore]
     #[should_panic(expected = "Must be built")]
     fn test_new_update_must_have_one() {
-        let _ = IndexedUpdate::new(1);
+        let _ = Builder::new(1);
+    }
+
+    #[test]
+    fn test_invalid_email_builder() {
+        let result = Builder::new(1).email("invalid@example").build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_builder_phone_number() {
+        let result = Builder::new(1).phone_number("invalid number").build();
+        assert!(result.is_err());
     }
 }
