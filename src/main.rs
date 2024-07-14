@@ -42,6 +42,10 @@ async fn main() -> anyhow::Result<()> {
 
     let _ = contact_repo.update_contact(edits).await;
 
+    let my_first_contact = contact_repo.get_by_id(1).await.unwrap();
+
+    println!("My first contact is {my_first_contact:?}");
+
     Ok(())
 }
 
