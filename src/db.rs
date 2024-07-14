@@ -7,9 +7,9 @@ use sqlx::postgres::PgPool;
 #[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait ContactRepo {
-    async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
+    async fn save(&self, contact: models::Contact) -> anyhow::Result<i64>;
     async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
-    async fn update_contact(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
+    async fn update(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
     async fn get_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
 }
 
@@ -27,7 +27,7 @@ impl PostgresContactRepo {
 
 #[async_trait]
 impl ContactRepo for PostgresContactRepo {
-    async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
+    async fn save(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
         (first_name, last_name, display_name, email, phone_number)
         VALUES ($1, $2, $3, $4, $5)
@@ -59,7 +59,7 @@ impl ContactRepo for PostgresContactRepo {
         Ok(contacts_with_id)
     }
 
-    async fn update_contact(&self, contact: models::ContactBuilder) -> anyhow::Result<()> {
+    async fn update(&self, contact: models::ContactBuilder) -> anyhow::Result<()> {
         sqlx::query!(
             r#"
             UPDATE contacts
@@ -115,7 +115,7 @@ mod tests {
             .with(eq(test_contact.clone()))
             .returning(|_| Ok(1));
 
-        let result = mock_contact_repo.save_contact(test_contact).await;
+        let result = mock_contact_repo.save(test_contact).await;
 
         let result = result.unwrap();
 
@@ -153,7 +153,7 @@ mod tests {
 
         let edits = models::ContactBuilder::new(1).set_email("new_email@example.com");
 
-        let result = mock_contact_repo.update_contact(edits).await;
+        let result = mock_contact_repo.update(edits).await;
 
         assert!(result.is_ok());
     }
