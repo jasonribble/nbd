@@ -21,7 +21,7 @@ async fn main() -> anyhow::Result<()> {
 
     let contact = parse_arguments()?;
 
-    let id = contact_repo.save_contact(contact).await?;
+    let id = contact_repo.save(contact).await?;
 
     println!("{id}");
 
@@ -40,7 +40,7 @@ async fn main() -> anyhow::Result<()> {
         .build()
         .unwrap();
 
-    let _ = contact_repo.update_contact(edits).await;
+    let _ = contact_repo.update(edits).await;
 
     let my_first_contact = contact_repo.get_by_id(1).await.unwrap();
 
