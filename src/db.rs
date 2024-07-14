@@ -10,6 +10,7 @@ pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
     async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
     async fn update_contact(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
+    async fn get_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
 }
 
 pub struct PostgresContactRepo {
@@ -82,6 +83,18 @@ impl ContactRepo for PostgresContactRepo {
 
         Ok(())
     }
+
+    async fn get_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact> {
+        let query_get_by_id = "SELECT * FROM contacts WHERE id=$1";
+
+        let contact: models::IndexedContact =
+            sqlx::query_as::<_, models::IndexedContact>(query_get_by_id)
+                .bind(id)
+                .fetch_one(&*self.pg_pool)
+                .await?;
+
+        Ok(contact)
+    }
 }
 
 #[cfg(test)]
@@ -143,5 +156,30 @@ mod tests {
         let result = mock_contact_repo.update_contact(edits).await;
 
         assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_get_contact_by_id() {
+        let mut mock_contact_repo = MockContactRepo::new();
+
+        let contact = models::IndexedContact {
+            id: 1,
+            contact: models::Contact::new("John", "Doe", "johndoe@example.com", "1234567890")
+                .unwrap(),
+        };
+
+        mock_contact_repo
+            .expect_get_by_id()
+            .times(1)
+            .with(eq(contact.id))
+            .return_once(|_| Ok(contact));
+
+        let result = mock_contact_repo.get_by_id(1).await;
+
+        assert!(result.is_ok());
+
+        let actual_contact = result.unwrap();
+
+        assert_eq!(actual_contact.id, 1);
     }
 }
