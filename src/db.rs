@@ -110,7 +110,7 @@ mod tests {
             models::Contact::new("John", "Smith", "johndoe@example.com", "123-456-7890").unwrap();
 
         mock_contact_repo
-            .expect_save_contact()
+            .expect_save()
             .times(1)
             .with(eq(test_contact.clone()))
             .returning(|_| Ok(1));
@@ -147,7 +147,7 @@ mod tests {
         let mut mock_contact_repo = MockContactRepo::new();
 
         mock_contact_repo
-            .expect_update_contact()
+            .expect_update()
             .times(1)
             .return_once(|_| Ok(()));
 
