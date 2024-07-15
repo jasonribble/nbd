@@ -15,36 +15,13 @@ async fn main() -> anyhow::Result<()> {
 
     let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
 
-    println!("Welcome. You must run a postgres container to have this work");
-
     let contact_repo = PostgresContactRepo::new(pool);
 
     let contact = parse_arguments()?;
 
-    let id = contact_repo.save(contact).await?;
+    let _ = contact_repo.save(contact).await?;
 
-    println!("{id}");
-
-    let all_contact = contact_repo.get_all().await?;
-
-    let most_recent_contact = &all_contact[all_contact.len() - 1..];
-
-    println!("{most_recent_contact:?}");
-
-    let edits = models::ContactBuilder::new(id)
-        .set_first_name("New Name")
-        .set_last_name("Yep")
-        .set_email("completely@new.com")
-        .set_phone_number("1233211233")
-        .set_display_name("Nickname")
-        .build()
-        .unwrap();
-
-    let _ = contact_repo.update(edits).await;
-
-    let my_first_contact = contact_repo.get_by_id(1).await.unwrap();
-
-    println!("My first contact is {my_first_contact:?}");
+    println!("Successfully saved contact.");
 
     Ok(())
 }
@@ -59,4 +36,63 @@ fn parse_arguments() -> Result<models::Contact, AppError> {
     }
 
     models::Contact::new(&args[1], &args[2], &args[3], &args[4])
+}
+
+#[cfg(test)]
+
+mod tests {
+    use assert_cmd::Command;
+
+    #[test]
+    fn test_connect_works() {
+        let mut cmd = Command::cargo_bin("connect").unwrap();
+
+        cmd.arg("First")
+            .arg("Last")
+            .arg("test@test.com")
+            .arg("123-321-1233");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("Successfully saved contact."));
+    }
+
+    #[test]
+    fn test_connect_invalid_email() {
+        let mut cmd = Command::cargo_bin("connect").unwrap();
+
+        cmd.arg("First")
+            .arg("Last")
+            .arg("test@.com")
+            .arg("123-321-1233");
+
+        cmd.assert()
+            .failure()
+            .stderr(predicates::str::contains("Error: test@.com is invalid.\n"));
+    }
+
+    #[test]
+    fn test_connect_invalid_phone() {
+        let mut cmd = Command::cargo_bin("connect").unwrap();
+
+        cmd.arg("First")
+            .arg("Last")
+            .arg("test@test.com")
+            .arg("32321123");
+
+        cmd.assert()
+            .failure()
+            .stderr(predicates::str::contains("Error: 32321123 is invalid.\n"));
+    }
+
+    #[test]
+    fn test_connect_invalid_args() {
+        let mut cmd = Command::cargo_bin("connect").unwrap();
+
+        cmd.arg("First").arg("Last").arg("32321123");
+
+        cmd.assert()
+            .failure()
+            .stderr(predicates::str::contains("Error: Invalid argument\n"));
+    }
 }
