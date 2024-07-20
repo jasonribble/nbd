@@ -40,7 +40,7 @@ async fn main() -> anyhow::Result<()> {
             println!("Successfully saved contact.");
         }
         Commands::Edit(value) => {
-            println!("This is an edit command {value:?}")
+            println!("This is an edit command {value:?}");
         }
     }
 
