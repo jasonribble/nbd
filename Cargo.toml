@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 async-trait = "0.1.80"
+clap = { version = "4.5.9", features = ["derive"] }
 dotenvy = "0.15.0"
 regex = "1.5.4"
 sqlx = { version = "0.7.4", features = ["runtime-tokio-native-tls", "postgres"] }

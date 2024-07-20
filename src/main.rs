@@ -1,12 +1,15 @@
 use std::env;
 
+mod commander;
 mod db;
 mod errors;
 mod models;
 mod utils;
 
+use clap::Parser;
+use commander::{Cli, Commands};
 use db::{ContactRepo, PostgresContactRepo};
-use errors::AppError;
+use models::Contact;
 use sqlx::PgPool;
 
 #[tokio::main]
@@ -17,25 +20,31 @@ async fn main() -> anyhow::Result<()> {
 
     let contact_repo = PostgresContactRepo::new(pool);
 
-    let contact = parse_arguments()?;
+    let cli = Cli::parse();
 
-    let _ = contact_repo.save(contact).await?;
+    // You can check for the existence of subcommands, and if found use their
+    // matches just as you would the top level cmd
+    match &cli.command {
+        Commands::Create(value) => {
+            let contact = Contact::new(
+                value.first_name.as_deref().unwrap_or(""),
+                value.last_name.as_deref().unwrap_or(""),
+                value.email.as_deref().unwrap_or(""),
+                value.phone_number.as_deref().unwrap_or(""),
+            );
 
-    println!("Successfully saved contact.");
+            let contact = contact.unwrap();
 
-    Ok(())
-}
+            let _ = contact_repo.save(contact).await?;
 
-fn parse_arguments() -> Result<models::Contact, AppError> {
-    let args: Vec<String> = env::args().collect();
-
-    let has_correct_number_of_args = args.len() != 5;
-
-    if has_correct_number_of_args {
-        return Err(AppError::InvalidArguments);
+            println!("Successfully saved contact.");
+        }
+        Commands::Edit(value) => {
+            println!("This is an edit command {value:?}")
+        }
     }
 
-    models::Contact::new(&args[1], &args[2], &args[3], &args[4])
+    Ok(())
 }
 
 #[cfg(test)]
@@ -44,12 +53,28 @@ mod tests {
     use assert_cmd::Command;
 
     #[test]
+    fn test_help() {
+        let mut cmd = Command::cargo_bin("connect").unwrap();
+
+        cmd.arg("--help");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("Usage: connect <COMMAND>"));
+    }
+
+    #[test]
     fn test_connect_works() {
         let mut cmd = Command::cargo_bin("connect").unwrap();
 
-        cmd.arg("First")
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("First")
+            .arg("--last-name")
             .arg("Last")
+            .arg("--email")
             .arg("test@test.com")
+            .arg("--phone-number")
             .arg("123-321-1233");
 
         cmd.assert()
@@ -61,28 +86,38 @@ mod tests {
     fn test_connect_invalid_email() {
         let mut cmd = Command::cargo_bin("connect").unwrap();
 
-        cmd.arg("First")
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("First")
+            .arg("--last-name")
             .arg("Last")
+            .arg("--email")
             .arg("test@.com")
+            .arg("--phone-number")
             .arg("123-321-1233");
 
         cmd.assert()
             .failure()
-            .stderr(predicates::str::contains("Error: test@.com is invalid.\n"));
+            .stderr(predicates::str::contains("InvalidEmail"));
     }
 
     #[test]
     fn test_connect_invalid_phone() {
         let mut cmd = Command::cargo_bin("connect").unwrap();
 
-        cmd.arg("First")
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("First")
+            .arg("--last-name")
             .arg("Last")
-            .arg("test@test.com")
-            .arg("32321123");
+            .arg("--email")
+            .arg("test@com.com")
+            .arg("--phone-number")
+            .arg("123-321-123");
 
         cmd.assert()
             .failure()
-            .stderr(predicates::str::contains("Error: 32321123 is invalid.\n"));
+            .stderr(predicates::str::contains("InvalidPhone"));
     }
 
     #[test]
@@ -93,6 +128,6 @@ mod tests {
 
         cmd.assert()
             .failure()
-            .stderr(predicates::str::contains("Error: Invalid argument\n"));
+            .stderr(predicates::str::contains("Usage: connect <COMMAND>"));
     }
 }
