@@ -41,18 +41,20 @@ async fn main() -> anyhow::Result<()> {
         }
         Commands::Edit(value) => {
             let contact = ContactBuilder::new(value.id)
-                .set_email(value.email.clone())
+                .set_email(&value.email)
                 .set_first_name(value.first_name.clone())
                 .set_last_name(value.last_name.clone())
-                .set_phone_number(value.phone_number.clone())
-                .set_display_name(value.display_name.clone());
+                .set_phone_number(&value.phone_number)
+                .set_display_name(value.display_name.clone())
+                .build()
+                .unwrap();
 
             let _ = contact_repo.update(contact).await;
         }
         Commands::Show => {
             let contacts = contact_repo.get_all().await?;
 
-            println!("{contacts:?}")
+            println!("{contacts:?}");
         }
         Commands::Get(value) => {
             let id = value.id;
