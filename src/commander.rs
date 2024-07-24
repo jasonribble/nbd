@@ -14,6 +14,9 @@ pub enum Commands {
 
     /// Edit a contact by ID
     Edit(EditCommand),
+
+    /// Get all contacts
+    Show,
 }
 
 #[derive(Args)]
