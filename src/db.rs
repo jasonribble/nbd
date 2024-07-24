@@ -154,7 +154,7 @@ mod tests {
             .return_once(|_| Ok(()));
 
         let edits =
-            models::ContactBuilder::new(1).set_email(Some("new_email@example.com".to_string()));
+            models::ContactBuilder::new(1).set_email(&Some("new_email@example.com".to_string()));
 
         let result = mock_contact_repo.update(edits).await;
 

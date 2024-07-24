@@ -64,7 +64,7 @@ impl Builder {
         self
     }
 
-    pub fn set_email(mut self, email: Option<String>) -> Self {
+    pub fn set_email(mut self, email: &Option<String>) -> Self {
         let email: &str = email.as_deref().unwrap_or("");
 
         if utils::is_not_valid_email(email) {
@@ -80,7 +80,7 @@ impl Builder {
         self
     }
 
-    pub fn set_phone_number(mut self, phone_number: Option<String>) -> Self {
+    pub fn set_phone_number(mut self, phone_number: &Option<String>) -> Self {
         let phone_number: &str = phone_number.as_deref().unwrap_or("");
 
         if utils::is_not_valid_phone_number(phone_number) {
@@ -149,7 +149,7 @@ mod tests {
     fn test_contact_update_builder() {
         let edits = Builder::new(1)
             .set_display_name(Some("Nickname".to_string()))
-            .set_phone_number(Some("123-233-1221".to_string()))
+            .set_phone_number(&Some("123-233-1221".to_string()))
             .build()
             .unwrap();
 
@@ -166,7 +166,7 @@ mod tests {
         let edits = Builder::new(2)
             .set_first_name(Some("Mary".to_string()))
             .set_last_name(Some("Smith".to_string()))
-            .set_email(Some("new@email.com".to_string()))
+            .set_email(&Some("new@email.com".to_string()))
             .build()
             .unwrap();
 
@@ -200,7 +200,7 @@ mod tests {
     #[test]
     fn test_invalid_email_builder() {
         let result = Builder::new(1)
-            .set_email(Some("invalid@example".to_string()))
+            .set_email(&Some("invalid@example".to_string()))
             .build();
         assert!(result.is_err());
     }
@@ -208,7 +208,7 @@ mod tests {
     #[test]
     fn test_invalid_builder_phone_number() {
         let result = Builder::new(1)
-            .set_phone_number(Some("invalid number".to_string()))
+            .set_phone_number(&Some("invalid number".to_string()))
             .build();
         assert!(result.is_err());
     }
