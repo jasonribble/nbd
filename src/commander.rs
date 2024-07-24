@@ -37,20 +37,20 @@ pub struct CreateCommand {
 #[derive(Args, Debug)]
 pub struct EditCommand {
     /// ID of contact to edit
-    id: i64,
+    pub id: i64,
 
     #[arg(short, long, value_name = "First Name")]
-    first_name: Option<String>,
+    pub first_name: Option<String>,
 
     #[arg(short, long, value_name = "Last Name")]
-    last_name: Option<String>,
+    pub last_name: Option<String>,
 
     #[arg(short, long, value_name = "Display Name")]
-    display_name: Option<String>,
+    pub display_name: Option<String>,
 
     #[arg(short, long)]
-    email: Option<String>,
+    pub email: Option<String>,
 
     #[arg(short, long, value_name = "Phone")]
-    phone_number: Option<String>,
+    pub phone_number: Option<String>,
 }

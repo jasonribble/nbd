@@ -30,7 +30,7 @@ mod tests {
 
         cmd.assert()
             .success()
-            .stdout(predicates::str::contains("Successfully saved contact."));
+            .stdout(predicates::str::contains("Successfully saved contact"));
     }
 
     #[test]

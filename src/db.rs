@@ -78,8 +78,10 @@ impl ContactRepo for PostgresContactRepo {
             contact.update.phone_number,
             contact.id
         )
-        .fetch_all(&*self.pg_pool)
+        .execute(&*self.pg_pool)
         .await?;
+
+        println!("Contact updated");
 
         Ok(())
     }
@@ -151,7 +153,8 @@ mod tests {
             .times(1)
             .return_once(|_| Ok(()));
 
-        let edits = models::ContactBuilder::new(1).set_email("new_email@example.com");
+        let edits =
+            models::ContactBuilder::new(1).set_email(Some("new_email@example.com".to_string()));
 
         let result = mock_contact_repo.update(edits).await;
 

@@ -54,34 +54,40 @@ impl Builder {
             && self.update.phone_number.is_none()
     }
 
-    pub fn set_first_name(mut self, first_name: &str) -> Self {
-        self.update.first_name = Some(first_name.to_string());
+    pub fn set_first_name(mut self, first_name: Option<String>) -> Self {
+        self.update.first_name = first_name;
         self
     }
 
-    pub fn set_last_name(mut self, last_name: &str) -> Self {
-        self.update.last_name = Some(last_name.to_string());
+    pub fn set_last_name(mut self, last_name: Option<String>) -> Self {
+        self.update.last_name = last_name;
         self
     }
 
-    pub fn set_email(mut self, email: &str) -> Self {
+    pub fn set_email(mut self, email: Option<String>) -> Self {
+        let email: &str = email.as_deref().unwrap_or("");
+
         if utils::is_not_valid_email(email) {
             self.errors.push(AppError::InvalidEmail(email.to_string()));
         }
+
         self.update.email = Some(email.to_string());
         self
     }
 
-    pub fn set_display_name(mut self, display_name: &str) -> Self {
-        self.update.display_name = Some(display_name.to_string());
+    pub fn set_display_name(mut self, display_name: Option<String>) -> Self {
+        self.update.display_name = display_name;
         self
     }
 
-    pub fn set_phone_number(mut self, phone_number: &str) -> Self {
+    pub fn set_phone_number(mut self, phone_number: Option<String>) -> Self {
+        let phone_number: &str = phone_number.as_deref().unwrap_or("");
+
         if utils::is_not_valid_phone_number(phone_number) {
             self.errors
                 .push(AppError::InvalidPhoneNumber(phone_number.to_string()));
         }
+
         self.update.phone_number = Some(phone_number.to_string());
         self
     }
@@ -142,8 +148,8 @@ mod tests {
     #[test]
     fn test_contact_update_builder() {
         let edits = Builder::new(1)
-            .set_display_name("Nickname")
-            .set_phone_number("123-233-1221")
+            .set_display_name(Some("Nickname".to_string()))
+            .set_phone_number(Some("123-233-1221".to_string()))
             .build()
             .unwrap();
 
@@ -158,9 +164,9 @@ mod tests {
     #[test]
     fn test_contact_update_builder_2() {
         let edits = Builder::new(2)
-            .set_first_name("Mary")
-            .set_last_name("Smith")
-            .set_email("new@email.com")
+            .set_first_name(Some("Mary".to_string()))
+            .set_last_name(Some("Smith".to_string()))
+            .set_email(Some("new@email.com".to_string()))
             .build()
             .unwrap();
 
@@ -193,13 +199,17 @@ mod tests {
 
     #[test]
     fn test_invalid_email_builder() {
-        let result = Builder::new(1).set_email("invalid@example").build();
+        let result = Builder::new(1)
+            .set_email(Some("invalid@example".to_string()))
+            .build();
         assert!(result.is_err());
     }
 
     #[test]
     fn test_invalid_builder_phone_number() {
-        let result = Builder::new(1).set_phone_number("invalid number").build();
+        let result = Builder::new(1)
+            .set_phone_number(Some("invalid number".to_string()))
+            .build();
         assert!(result.is_err());
     }
 }
