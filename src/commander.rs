@@ -17,6 +17,9 @@ pub enum Commands {
 
     /// Get all contacts
     Show,
+
+    /// Get a contact
+    Get(GetCommand),
 }
 
 #[derive(Args)]
@@ -56,4 +59,10 @@ pub struct EditCommand {
 
     #[arg(short, long, value_name = "Phone")]
     pub phone_number: Option<String>,
+}
+
+#[derive(Args, Debug)]
+pub struct GetCommand {
+    /// ID of contact to get
+    pub id: i64,
 }

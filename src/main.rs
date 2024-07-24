@@ -54,6 +54,13 @@ async fn main() -> anyhow::Result<()> {
 
             println!("{contacts:?}")
         }
+        Commands::Get(value) => {
+            let id = value.id;
+
+            let contact = contact_repo.get_by_id(id).await?;
+
+            println!("{contact:?}");
+        }
     }
 
     Ok(())
