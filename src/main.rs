@@ -49,6 +49,11 @@ async fn main() -> anyhow::Result<()> {
 
             let _ = contact_repo.update(contact).await;
         }
+        Commands::Show => {
+            let contacts = contact_repo.get_all().await?;
+
+            println!("{contacts:?}")
+        }
     }
 
     Ok(())
