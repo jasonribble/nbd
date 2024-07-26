@@ -5,6 +5,7 @@ pub enum AppError {
     DatabaseError(sqlx::Error),
     InvalidEmail(String),
     InvalidPhoneNumber(String),
+    EmptyUpdate,
 }
 
 impl fmt::Display for AppError {
@@ -13,6 +14,7 @@ impl fmt::Display for AppError {
             Self::DatabaseError(error) => write!(f, "Database error: {error}"),
             Self::InvalidEmail(email) => write!(f, "{email} is invalid."),
             Self::InvalidPhoneNumber(phone) => write!(f, "{phone} is invalid."),
+            Self::EmptyUpdate => write!(f, "Empty update"),
         }
     }
 }
