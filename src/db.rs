@@ -63,7 +63,7 @@ impl ContactRepo for PostgresContactRepo {
         sqlx::query!(
             r#"
             UPDATE contacts
-            SET 
+            SET
                 first_name = COALESCE($1, first_name),
                 last_name = COALESCE($2, last_name),
                 display_name = COALESCE($3, display_name),
@@ -153,8 +153,7 @@ mod tests {
             .times(1)
             .return_once(|_| Ok(()));
 
-        let edits =
-            models::ContactBuilder::new(1).set_email(&Some("new_email@example.com".to_string()));
+        let edits = models::ContactBuilder::new(1, None, None, None, Some("some@email.com".to_string()), None).unwrap();
 
         let result = mock_contact_repo.update(edits).await;
 
