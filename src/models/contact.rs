@@ -25,6 +25,16 @@ pub struct Update {
     pub phone_number: Option<String>,
 }
 
+impl Update {
+    pub const fn is_empty(&self) -> bool {
+        self.first_name.is_none()
+            && self.last_name.is_none()
+            && self.display_name.is_none()
+            && self.email.is_none()
+            && self.phone_number.is_none()
+    }
+}
+
 #[derive(Debug)]
 pub struct Builder {
     pub id: i64,
@@ -43,25 +53,31 @@ impl Builder {
 
         let maybe_email = email.as_deref().unwrap_or("");
 
-        if utils::is_not_valid_email(maybe_email) || email != None {
+        if utils::is_not_valid_email(maybe_email) && email != None {
             return Err(AppError::InvalidEmail(email.clone().unwrap_or_else(|| String::from(""))));
         }
 
         let maybe_phone = phone_number.as_deref().unwrap_or("");
 
-        if utils::is_not_valid_phone_number(maybe_phone) || phone_number != None  {
+        if utils::is_not_valid_phone_number(maybe_phone) && phone_number != None  {
             return Err(AppError::InvalidPhoneNumber(phone_number.clone().unwrap_or_else(|| String::from(""))));
+        }
+
+        let update = Update {
+            first_name,
+            last_name,
+            display_name,
+            email,
+            phone_number,
+        };
+        
+        if update.is_empty() {
+            return Err(AppError::EmptyUpdate);
         }
 
         Ok(Self {
             id,
-            update: Update {
-                first_name,
-                last_name,
-                display_name,
-                email,
-                phone_number,
-            },
+            update,
             errors: Vec::new(),
         })
     }
@@ -115,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_contact_update_builder() {
-        let edits = Builder::new(1, None, None, Some("test@test.com".to_string()), None, Some("123-233-1221".to_string())).unwrap();
+        let edits = Builder::new(1, None, None, None, Some("123-233-1221".to_string()), Some("Nickname".to_string())).unwrap();
 
         assert_eq!(edits.id, 1);
         assert_eq!(edits.update.display_name, Some("Nickname".to_string()));
@@ -127,7 +143,7 @@ mod tests {
 
     #[test]
     fn test_contact_update_builder_2() {
-        let edits = Builder::new(2, Some("Mary".to_string()), Some("Smith".to_string()), None, Some("new@email.com".to_string()), None).unwrap();
+        let edits = Builder::new(2, Some("Mary".to_string()), Some("Smith".to_string()), Some("new@email.com".to_string()), None, None).unwrap();
 
         assert_eq!(edits.id, 2);
         assert_eq!(edits.update.first_name, Some("Mary".to_string()));
@@ -139,12 +155,6 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
-        let contact = Builder::new(1, None, None, None, None, None).unwrap();
-        assert!(contact.is_empty());
-    }
-
-    #[test]
-    fn test_is_empty_error() {
         let result = Builder::new(1, None, None, None, None, None);
         assert!(result.is_err());
     }
@@ -152,13 +162,13 @@ mod tests {
 
     #[test]
     fn test_invalid_email_builder() {
-        let result: Result<Builder, crate::errors::AppError> = Builder::new(1, None, None, None, Some("invalid@example".to_string()), None);
+        let result = Builder::new(1, None, None, None, Some("invalid@example".to_string()), None);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_invalid_builder_phone_number() {
-        let result = Builder::new(1, None, None, None, None, Some("123-123-1234".to_string()));
+        let result = Builder::new(1, None, None, None, None, Some("123-123-12344".to_string()));
         assert!(result.is_err());
     }
 }
