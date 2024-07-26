@@ -40,14 +40,8 @@ async fn main() -> anyhow::Result<()> {
             println!("Successfully saved contact {id}");
         }
         Commands::Edit(value) => {
-            let contact = ContactBuilder::new(value.id)
-                .set_email(&value.email)
-                .set_first_name(value.first_name.clone())
-                .set_last_name(value.last_name.clone())
-                .set_phone_number(&value.phone_number)
-                .set_display_name(value.display_name.clone())
-                .build()
-                .unwrap();
+            let contact = ContactBuilder::new(value.id, value.first_name.clone(), value.last_name.clone(), value.display_name.clone(), value.email.clone(), value.phone_number.clone()).unwrap();
+
 
             let _ = contact_repo.update(contact).await;
         }
