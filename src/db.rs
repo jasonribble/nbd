@@ -153,7 +153,15 @@ mod tests {
             .times(1)
             .return_once(|_| Ok(()));
 
-        let edits = models::ContactBuilder::new(1, None, None, None, Some("some@email.com".to_string()), None).unwrap();
+        let edits = models::ContactBuilder::new(
+            1,
+            None,
+            None,
+            Some("some@email.com".to_string()),
+            None,
+            None,
+        )
+        .unwrap();
 
         let result = mock_contact_repo.update(edits).await;
 
