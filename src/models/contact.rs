@@ -51,17 +51,17 @@ impl Builder {
     ) -> Result<Self, AppError> {
         let maybe_email = email.as_deref().unwrap_or("");
 
-        if utils::is_not_valid_email(maybe_email) && email != None {
+        if utils::is_not_valid_email(maybe_email) && Option::is_some(&email) {
             return Err(AppError::InvalidEmail(
-                email.clone().unwrap_or_else(|| String::from("")),
+                email.clone().unwrap_or_else(|| String::new()),
             ));
         }
 
         let maybe_phone = phone_number.as_deref().unwrap_or("");
 
-        if utils::is_not_valid_phone_number(maybe_phone) && phone_number != None {
+        if utils::is_not_valid_phone_number(maybe_phone) && Option::is_some(&email) {
             return Err(AppError::InvalidPhoneNumber(
-                phone_number.clone().unwrap_or_else(|| String::from("")),
+                phone_number.clone().unwrap_or_else(|| String::new()),
             ));
         }
 
@@ -81,7 +81,7 @@ impl Builder {
     }
 
     #[allow(dead_code)]
-    pub fn is_empty(&self) -> bool {
+    const fn is_empty(&self) -> bool {
         self.update.first_name.is_none()
             && self.update.last_name.is_none()
             && self.update.display_name.is_none()
