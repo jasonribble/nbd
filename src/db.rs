@@ -7,7 +7,7 @@ use sqlx::SqlitePool;
 #[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait ContactRepo {
-    async fn save(&self, contact: models::Contact) -> anyhow::Result<i64>;
+    async fn create(&self, contact: models::Contact) -> anyhow::Result<i64>;
     async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
     async fn update(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
     async fn get_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
@@ -27,22 +27,21 @@ impl SqliteContactRepo {
 
 #[async_trait]
 impl ContactRepo for SqliteContactRepo {
-    async fn save(&self, contact: models::Contact) -> anyhow::Result<i64> {
+    async fn create(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
         (first_name, last_name, display_name, email, phone_number)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id";
+        VALUES (?, ?, ?, ?, ?)";
+    
+        let result = sqlx::query(query)
+        .bind(&contact.first_name)
+        .bind(&contact.last_name)
+        .bind(&contact.display_name)
+        .bind(&contact.email)
+        .bind(&contact.phone_number)
+        .execute(&*self.sqlite_pool)
+        .await?;
 
-        let (id,) = sqlx::query_as::<_, (i64,)>(query)
-            .bind(&contact.first_name)
-            .bind(&contact.last_name)
-            .bind(&contact.display_name)
-            .bind(&contact.email)
-            .bind(&contact.phone_number)
-            .fetch_one(&*self.sqlite_pool)
-            .await?;
-
-        Ok(id)
+        Ok(result.last_insert_rowid())
     }
 
     async fn get_all(&self) -> anyhow::Result<Vec<models::IndexedContact>> {
@@ -117,7 +116,7 @@ mod tests {
             .with(eq(test_contact.clone()))
             .returning(|_| Ok(1));
 
-        let result = mock_contact_repo.save(test_contact).await;
+        let result = mock_contact_repo.create(test_contact).await;
 
         let result = result.unwrap();
 
