@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::models;
 use async_trait::async_trait;
-use sqlx::postgres::PgPool;
+use sqlx::SqlitePool;
 
 #[cfg_attr(test, mockall::automock)]
 #[async_trait]
@@ -13,20 +13,20 @@ pub trait ContactRepo {
     async fn get_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
 }
 
-pub struct PostgresContactRepo {
-    pg_pool: Arc<PgPool>,
+pub struct SqliteContactRepo {
+    sqlite_pool: Arc<SqlitePool>,
 }
 
-impl PostgresContactRepo {
-    pub fn new(pg_pool: PgPool) -> Self {
+impl SqliteContactRepo {
+    pub fn new(pool: SqlitePool) -> Self {
         Self {
-            pg_pool: Arc::new(pg_pool),
+            sqlite_pool: Arc::new(pool),
         }
     }
 }
 
 #[async_trait]
-impl ContactRepo for PostgresContactRepo {
+impl ContactRepo for SqliteContactRepo {
     async fn save(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
         (first_name, last_name, display_name, email, phone_number)
@@ -39,7 +39,7 @@ impl ContactRepo for PostgresContactRepo {
             .bind(&contact.display_name)
             .bind(&contact.email)
             .bind(&contact.phone_number)
-            .fetch_one(&*self.pg_pool)
+            .fetch_one(&*self.sqlite_pool)
             .await?;
 
         Ok(id)
@@ -53,7 +53,7 @@ impl ContactRepo for PostgresContactRepo {
 
         let contacts_with_id: Vec<models::IndexedContact> =
             sqlx::query_as::<_, models::IndexedContact>(get_contacts_query)
-                .fetch_all(&*self.pg_pool)
+                .fetch_all(&*self.sqlite_pool)
                 .await?;
 
         Ok(contacts_with_id)
@@ -78,7 +78,7 @@ impl ContactRepo for PostgresContactRepo {
             contact.update.phone_number,
             contact.id
         )
-        .execute(&*self.pg_pool)
+        .execute(&*self.sqlite_pool)
         .await?;
 
         println!("Contact updated");
@@ -92,7 +92,7 @@ impl ContactRepo for PostgresContactRepo {
         let contact: models::IndexedContact =
             sqlx::query_as::<_, models::IndexedContact>(query_get_by_id)
                 .bind(id)
-                .fetch_one(&*self.pg_pool)
+                .fetch_one(&*self.sqlite_pool)
                 .await?;
 
         Ok(contact)
