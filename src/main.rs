@@ -8,17 +8,17 @@ mod utils;
 
 use clap::Parser;
 use commander::{Cli, Commands};
-use db::{ContactRepo, PostgresContactRepo};
+use db::{ContactRepo, SqliteContactRepo};
 use models::{Contact, ContactBuilder};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
-    let pool = PgPool::connect(&env::var("DATABASE_URL")?).await?;
+    let pool = SqlitePool::connect(&env::var("DATABASE_URL")?).await?;
 
-    let contact_repo = PostgresContactRepo::new(pool);
+    let contact_repo = SqliteContactRepo::new(pool);
 
     let cli = Cli::parse();
 
