@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
 
             let contact = contact.unwrap();
 
-            let id = contact_repo.save(contact).await?;
+            let id = contact_repo.create(contact).await?;
 
             println!("Successfully saved contact {id}");
         }
