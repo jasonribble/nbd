@@ -59,7 +59,7 @@ impl Builder {
 
         let maybe_phone = phone_number.as_deref().unwrap_or("");
 
-        if utils::is_not_valid_phone_number(maybe_phone) && Option::is_some(&email) {
+        if utils::is_not_valid_phone_number(maybe_phone) && Option::is_some(&phone_number) {
             return Err(AppError::InvalidPhoneNumber(
                 phone_number.clone().unwrap_or_else(|| String::new()),
             ));
