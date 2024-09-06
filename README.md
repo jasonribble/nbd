@@ -8,8 +8,6 @@ This is a personal CRM to help people create thriving relationship in their life
 
 This Rust project requires the following:
 
-- Docker
-- Docker Compose
 - Cargo
 - sqlx-cli
 
