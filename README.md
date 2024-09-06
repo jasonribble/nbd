@@ -15,12 +15,10 @@ This Rust project requires the following:
 
 ## Setup
 
-1. Run `docker-compose up -d` to run Postgres in the background.
-
-2. Declare the database URL, either by exporting it:
+1. Declare the database URL, either by exporting it:
 
    ```
-   export DATABASE_URL="postgres://postgres:test@localhost/contacts"
+   export DATABASE_URL="sqlite:contacts.db"
    ```
 
    or by making a `.env` file:
@@ -46,13 +44,10 @@ This Rust project requires the following:
 Add a contact
 
 ```
-cargo run -- John Test john@example.com 123-456-7890
+cargo run create --first-name test --last-name last --email test@ttest.com --phone-number 123-231-1122
 ```
 
 ## Cleanup
 
-To destroy the Postgres database, run:
+To destroy the database, delete `contacts.db`
 
-```
-docker-compose down --volumes
-```
