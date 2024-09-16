@@ -1,4 +1,5 @@
 mod contact;
+mod agent;
 
 pub use contact::Construct as ContactBuilder;
 pub use contact::Contact;
