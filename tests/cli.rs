@@ -79,7 +79,7 @@ mod tests {
     }
 
     #[test]
-    fn test_nbd_invalid_email() {
+    fn test_cli_invalid_email() {
         let mut cmd = create_command();
         cmd.arg("create")
             .arg("--first-name")
