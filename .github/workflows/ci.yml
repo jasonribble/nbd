@@ -53,6 +53,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Run integration
+        run: cargo test --test api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
   component:
     name: Component Tests
     runs-on: ubuntu-latest
