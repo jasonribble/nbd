@@ -54,7 +54,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Prepare API tests
-        run: cargo run --bin tdd_rs > api.log 2>&1 &
+        run: cargo run --bin nbd-api > api.log 2>&1 &
 
       - name: Wait for API to be ready
         run: |
