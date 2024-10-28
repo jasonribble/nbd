@@ -48,15 +48,25 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Run integration
+      - name: Run CLI tests
         run: cargo test --test cli
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Run integration
+      - name: Prepare API tests
+        run: cargo run --bin tdd_rs > api.log 2>&1 &
+
+      - name: Wait for API to be ready
+        run: |
+          while ! grep -q "API: listening on" api.log; do
+            sleep 1
+          done
+
+      - name: Run API
         run: cargo test --test api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 
   component:
     name: Component Tests
@@ -118,3 +128,10 @@ jobs:
           components: clippy
       - name: Lint check
         run: cargo clippy -- -D clippy::pedantic -W clippy::nursery
+
+  final_check:
+    name: Final Check
+    needs: [build, unit, integration, component, contract, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Success"
