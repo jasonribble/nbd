@@ -125,4 +125,15 @@ mod tests {
             .failure()
             .stderr(predicates::str::contains(stderr));
     }
+
+    #[test]
+    fn test_import() {
+        let mut cmd = create_command();
+        cmd.arg("import")
+            .arg("example.csv");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("Successfully imported"));
+    }
 }
