@@ -8,7 +8,7 @@ This is a personal contact management to help people create and maintain thrivin
 
 ## Motivation
 
-Most CRM tools are not offline first, or privacy by design. This project attempts to solve that problem first, then try to create a seamless integration across devices.
+The world needs a privacy-first, offline-first, personal contact manager. 
 
 ## Development
 
