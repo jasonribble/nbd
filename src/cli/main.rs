@@ -68,6 +68,9 @@ async fn main() -> anyhow::Result<()> {
 
             println!("Successfully deleted contact {contact_id}");
         }
+        Commands::Import(filename) => {
+            println!("Feature Coming Soon: Successfully imported {filename:?} (but not really)");
+        }
     }
 
     Ok(())

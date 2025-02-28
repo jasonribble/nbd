@@ -23,6 +23,9 @@ pub enum Commands {
 
     /// Delete a contact
     Delete(DeleteCommand),
+
+    /// Import contact via CSV
+    Import(ImportCommand),
 }
 
 #[derive(Args)]
@@ -74,4 +77,10 @@ pub struct GetCommand {
 pub struct DeleteCommand {
     /// ID of contact to delete
     pub id: i64,
+}
+
+#[derive(Args, Debug)]
+pub struct ImportCommand {
+    /// name of CSV file
+    pub filename: String,
 }
