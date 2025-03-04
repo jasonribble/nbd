@@ -48,15 +48,20 @@ This Rust project requires the following:
 Create a contact
 
 ```
-Usage: nbd create [OPTIONS]
+Usage: nbd-cli <COMMAND>
+
+Commands:
+  create  Create a contact
+  edit    Edit a contact by ID
+  show    Get all contacts
+  get     Get a contact
+  delete  Delete a contact
+  import  Import contact via CSV
+  help    Print this message or the help of the given subcommand(s)
 
 Options:
-  -f, --first-name <First Name>
-  -l, --last-name <Last Name>
-  -d, --display-name <Display Name>
-  -e, --email <EMAIL>
-  -p, --phone-number <Phone>
-  -h, --help                         Print help
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
 For example
