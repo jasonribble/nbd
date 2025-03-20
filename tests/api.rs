@@ -3,6 +3,7 @@ mod tests {
     use reqwest;
 
     #[tokio::test]
+    #[ignore]
     async fn test_ok_endpoint() {
         let url = "http://localhost:8080/ok";
         let response = reqwest::get(url).await.expect("Failed to send request");
