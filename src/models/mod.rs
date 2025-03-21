@@ -1,5 +1,6 @@
 mod agent;
 mod contact;
+mod csv;
 mod metadata;
 
 pub use contact::Construct as ContactBuilder;
