@@ -30,10 +30,6 @@ reqwest = { version = "0.12", features = ["json"] }
 name = "nbd-cli"
 path = "src/cli/main.rs"
 
-[[bin]]
-name = "nbd-api"
-path = "src/api/main.rs"
-
 [lib]
 name = "nbd"
 path = "src/lib.rs"

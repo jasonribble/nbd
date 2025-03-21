@@ -53,21 +53,6 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Prepare API tests
-        run: cargo run --bin nbd-api > api.log 2>&1 &
-
-      - name: Wait for API to be ready
-        run: |
-          while ! grep -q "API: listening on" api.log; do
-            sleep 1
-          done
-
-      - name: Run API
-        run: cargo test --test api
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-
   component:
     name: Component Tests
     runs-on: ubuntu-latest
