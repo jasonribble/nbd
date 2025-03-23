@@ -3,30 +3,35 @@ use std::path::Path;
 
 fn read_csv(filename: &str) -> anyhow::Result<Vec<&str>> {
     let path = Path::new(filename);
-    validate_extension(path)?;
-    validate_file(path)?;
 
-    let reader = Reader::from_path(path)?;
-    if !reader.into_records().all(|result| result.is_ok()) {
-        return Err(anyhow::anyhow!("Invalid CSV format"));
-    }
+    validate_csv_extension(path)?;
+    validate_csv_file(path)?;
+    validate_csv_format(path)?;
 
     Ok(Vec::new())
 }
 
-fn validate_extension(path: &Path) -> anyhow::Result<()> {
+fn validate_csv_extension(path: &Path) -> anyhow::Result<()> {
     match path.extension().and_then(|ext| ext.to_str()) {
         Some("csv") => Ok(()),
         _ => Err(anyhow::anyhow!("File must have .csv extension")),
     }
 }
 
-fn validate_file(path: &Path) -> anyhow::Result<()> {
+fn validate_csv_file(path: &Path) -> anyhow::Result<()> {
     let metadata = std::fs::metadata(path)
         .map_err(|_| anyhow::anyhow!("Failed to open file: {}", path.display()))?;
 
     if metadata.len() == 0 {
         return Err(anyhow::anyhow!("CSV file is empty"));
+    }
+    Ok(())
+}
+
+fn validate_csv_format(path: &Path) -> anyhow::Result<()> {
+    let reader = Reader::from_path(path)?;
+    if !reader.into_records().all(|result| result.is_ok()) {
+        return Err(anyhow::anyhow!("Invalid CSV format"));
     }
     Ok(())
 }
@@ -82,8 +87,8 @@ mod tests {
     fn should_error_if_invalid_csv_format() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
-        // Malformed CSV
-        write!(temp_csv, "name,age,city\nAlice,30").unwrap();
+        let malformed_csv = "name,age,city\nAlice,30";
+        write!(temp_csv, "{}", malformed_csv).unwrap();
 
         let result = read_csv(temp_csv.path().to_str().unwrap());
 
