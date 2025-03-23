@@ -2,27 +2,26 @@ use std::path::Path;
 
 fn read_csv(filename: &str) -> anyhow::Result<Vec<&str>> {
     let path = Path::new(filename);
-    let extension = path.extension().and_then(|ext| ext.to_str());
+    validate_extension(path)?;
+    validate_file(path)?;
+    Ok(Vec::new())
+}
 
-    if let Some(ext) = extension {
-        if ext != "csv" {
-            return Err(anyhow::anyhow!("File must have .csv extension"));
-        }
-    }
-
-    match extension {
-        Some("csv") => {
-            let metadata = std::fs::metadata(path)
-                .map_err(|_| anyhow::anyhow!("Failed to open file: {}", path.display()))?;
-
-            if metadata.len() == 0 {
-                return Err(anyhow::anyhow!("CSV file is empty"));
-            }
-
-            Ok(Vec::new())
-        }
+fn validate_extension(path: &Path) -> anyhow::Result<()> {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("csv") => Ok(()),
         _ => Err(anyhow::anyhow!("File must have .csv extension")),
     }
+}
+
+fn validate_file(path: &Path) -> anyhow::Result<()> {
+    let metadata = std::fs::metadata(path)
+        .map_err(|_| anyhow::anyhow!("Failed to open file: {}", path.display()))?;
+
+    if metadata.len() == 0 {
+        return Err(anyhow::anyhow!("CSV file is empty"));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -42,7 +41,7 @@ mod tests {
     #[test]
     fn should_accept_valid_csv_file() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
-        writeln!(temp_csv, "name,\nAlice").unwrap();
+        writeln!(temp_csv, "first_name,\nAlice").unwrap();
 
         let result = read_csv(temp_csv.path().to_str().unwrap());
 
