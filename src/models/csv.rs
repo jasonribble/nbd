@@ -1,4 +1,4 @@
-use std::{fs::File, path::Path};
+use std::path::Path;
 
 fn read_csv(filename: &str) -> anyhow::Result<Vec<&str>> {
     let path = Path::new(filename);
@@ -27,6 +27,7 @@ fn read_csv(filename: &str) -> anyhow::Result<Vec<&str>> {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
     use tempfile::NamedTempFile;
 
     use super::*;
@@ -39,8 +40,9 @@ mod tests {
     }
 
     #[test]
-    fn should_accept_csv_file() {
-        let temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
+    fn should_accept_valid_csv_file() {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
+        writeln!(temp_csv, "name,\nAlice").unwrap();
 
         let result = read_csv(temp_csv.path().to_str().unwrap());
 
