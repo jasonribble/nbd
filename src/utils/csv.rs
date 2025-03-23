@@ -17,9 +17,17 @@ fn get_records_from_csv(path: &Path) -> anyhow::Result<Vec<String>> {
     let mut reader = Reader::from_path(path)?;
     let mut records = Vec::new();
 
+    if let Ok(headers) = reader.headers() {
+        for header_record in headers.iter() {
+            records.push(header_record.to_string());
+        }
+    }
+
     for result in reader.records() {
-        let record = result?;
-        records.push(record[0].to_string());
+        let string_records = result?;
+        for string_record in string_records.iter() {
+            records.push(string_record.to_string());
+        }
     }
 
     Ok(records)
@@ -101,7 +109,7 @@ mod tests {
     fn should_error_if_invalid_csv_format() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
-        let malformed_csv = "name,age,city\nAlice,30";
+        let malformed_csv = "first_name,phone_number,email\nAlice,1234567890";
         write!(temp_csv, "{}", malformed_csv).unwrap();
 
         let result = read_csv(temp_csv.path().to_str().unwrap());
@@ -113,15 +121,35 @@ mod tests {
     }
 
     #[test]
-    fn test_read_csv_with_multiple_rows() -> anyhow::Result<()> {
+    fn should_read_csv_with_multiple_rows() -> anyhow::Result<()> {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
-        let name_age_three_rows_content = "name,age\nAlice,30\nBob,25\nCharlie,35";
+        let name_age_three_rows_content =
+            "first_name,phone_number\nAlice,1234567890\nBob,0989878721\nCharlie,1989878721";
 
         writeln!(temp_csv, "{}", name_age_three_rows_content)?;
         let result = read_csv(temp_csv.path().to_str().unwrap())?;
 
-        assert_eq!(result.len(), 3);
+        assert_eq!(result.len(), 8);
 
         Ok(())
     }
+    #[test]
+    fn should_return_matching_list_when_given_csv() -> anyhow::Result<()> {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
+        let one_contact_content = "first_name,phone_number\nAlice,1234567890";
+
+        writeln!(temp_csv, "{}", one_contact_content)?;
+        let records = read_csv(temp_csv.path().to_str().unwrap())?;
+
+        assert_eq!(
+            records,
+            vec!["first_name", "phone_number", "Alice", "1234567890"]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    #[ignore]
+    fn should_return_contact_when_given_csv() {}
 }
