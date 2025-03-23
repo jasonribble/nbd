@@ -6,7 +6,7 @@ use super::{connection::Connection, MetadataRepo};
 #[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait ContactRepo {
-    async fn create_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
+    async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
     async fn get_all_contacts(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
     async fn update_contact(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
     async fn get_contact_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
@@ -15,7 +15,7 @@ pub trait ContactRepo {
 
 #[async_trait]
 impl ContactRepo for Connection {
-    async fn create_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
+    async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
         (first_name, last_name, display_name, email, phone_number)
         VALUES (?, ?, ?, ?, ?)";
@@ -114,12 +114,12 @@ mod tests {
             models::Contact::new("John", "Smith", "johndoe@example.com", "123-456-7890").unwrap();
 
         mock_contact_repo
-            .expect_create_contact()
+            .expect_save_contact()
             .times(1)
             .with(eq(test_contact.clone()))
             .returning(|_| Ok(1));
 
-        let result = mock_contact_repo.create_contact(test_contact).await;
+        let result = mock_contact_repo.save_contact(test_contact).await;
 
         let result = result.unwrap();
 
