@@ -1,5 +1,4 @@
 mod contact;
-mod csv;
 mod metadata;
 mod profile;
 
