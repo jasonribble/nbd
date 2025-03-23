@@ -21,7 +21,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn test_create_contact_get_metadata() {
+    async fn test_save_contact_get_metadata() {
         let pool = test_helpers::setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
@@ -29,7 +29,7 @@ mod tests {
         let example_contact =
             Contact::new("Lewis", "Carroll", "lewis@wonderland.com", "777-777-7777").unwrap();
 
-        let result_contact_id = data_repo.create_contact(example_contact).await;
+        let result_contact_id = data_repo.save_contact(example_contact).await;
         let contact_id = result_contact_id.unwrap();
 
         let result_expected_metadata = data_repo.get_metadata_by_id(contact_id).await;
@@ -48,7 +48,7 @@ mod tests {
         let example_contact =
             Contact::new("Lewis", "Carroll", "lewis@wonderland.com", "777-777-7777").unwrap();
 
-        let result_contact_id = data_repo.create_contact(example_contact.clone()).await;
+        let result_contact_id = data_repo.save_contact(example_contact.clone()).await;
 
         let contact_id = result_contact_id.unwrap();
 
