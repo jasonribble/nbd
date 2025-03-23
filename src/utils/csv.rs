@@ -8,7 +8,13 @@ fn read_csv(filename: &str) -> anyhow::Result<Vec<String>> {
     validate_csv_file(path)?;
     validate_csv_format(path)?;
 
-    let mut reader = Reader::from_path(filename)?;
+    let records = get_records_from_csv(path);
+
+    records
+}
+
+fn get_records_from_csv(path: &Path) -> anyhow::Result<Vec<String>> {
+    let mut reader = Reader::from_path(path)?;
     let mut records = Vec::new();
 
     for result in reader.records() {
