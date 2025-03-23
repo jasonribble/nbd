@@ -1,14 +1,22 @@
 use csv::Reader;
 use std::path::Path;
 
-fn read_csv(filename: &str) -> anyhow::Result<Vec<&str>> {
+fn read_csv(filename: &str) -> anyhow::Result<Vec<String>> {
     let path = Path::new(filename);
 
     validate_csv_extension(path)?;
     validate_csv_file(path)?;
     validate_csv_format(path)?;
 
-    Ok(Vec::new())
+    let mut reader = Reader::from_path(filename)?;
+    let mut records = Vec::new();
+
+    for result in reader.records() {
+        let record = result?;
+        records.push(record[0].to_string());
+    }
+
+    Ok(records)
 }
 
 fn validate_csv_extension(path: &Path) -> anyhow::Result<()> {
@@ -96,5 +104,18 @@ mod tests {
             Ok(_) => panic!("Expected invalid CSV, but was valid"),
             Err(e) => assert_eq!(e.to_string(), "Invalid CSV format"),
         }
+    }
+
+    #[test]
+    fn test_read_csv_with_multiple_rows() -> anyhow::Result<()> {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
+        let name_age_three_rows_content = "name,age\nAlice,30\nBob,25\nCharlie,35";
+
+        writeln!(temp_csv, "{}", name_age_three_rows_content)?;
+        let result = read_csv(temp_csv.path().to_str().unwrap())?;
+
+        assert_eq!(result.len(), 3);
+
+        Ok(())
     }
 }
