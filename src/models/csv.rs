@@ -1,9 +1,16 @@
+use csv::Reader;
 use std::path::Path;
 
 fn read_csv(filename: &str) -> anyhow::Result<Vec<&str>> {
     let path = Path::new(filename);
     validate_extension(path)?;
     validate_file(path)?;
+
+    let reader = Reader::from_path(path)?;
+    if !reader.into_records().all(|result| result.is_ok()) {
+        return Err(anyhow::anyhow!("Invalid CSV format"));
+    }
+
     Ok(Vec::new())
 }
 
@@ -41,7 +48,7 @@ mod tests {
     #[test]
     fn should_accept_valid_csv_file() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
-        writeln!(temp_csv, "first_name,\nAlice").unwrap();
+        writeln!(temp_csv, "first_name\nAlice").unwrap();
 
         let result = read_csv(temp_csv.path().to_str().unwrap());
 
@@ -69,5 +76,20 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "CSV file is empty");
+    }
+
+    #[test]
+    fn should_error_if_invalid_csv_format() {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
+
+        // Malformed CSV
+        write!(temp_csv, "name,age,city\nAlice,30").unwrap();
+
+        let result = read_csv(temp_csv.path().to_str().unwrap());
+
+        match result {
+            Ok(_) => panic!("Expected invalid CSV, but was valid"),
+            Err(e) => assert_eq!(e.to_string(), "Invalid CSV format"),
+        }
     }
 }
