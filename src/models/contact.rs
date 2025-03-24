@@ -17,7 +17,7 @@ pub struct Indexed {
     pub contact: Contact,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize)]
 pub struct Optional {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
@@ -27,6 +27,7 @@ pub struct Optional {
 }
 
 impl Optional {
+    #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.first_name.is_none()
             && self.last_name.is_none()
