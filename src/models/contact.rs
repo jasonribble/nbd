@@ -18,7 +18,7 @@ pub struct Indexed {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Update {
+pub struct OptionalContact {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub display_name: Option<String>,
@@ -26,7 +26,7 @@ pub struct Update {
     pub phone_number: Option<String>,
 }
 
-impl Update {
+impl OptionalContact {
     pub const fn is_empty(&self) -> bool {
         self.first_name.is_none()
             && self.last_name.is_none()
@@ -39,7 +39,7 @@ impl Update {
 #[derive(Debug)]
 pub struct Construct {
     pub id: i64,
-    pub update: Update,
+    pub optional_contact: OptionalContact,
 }
 impl Construct {
     /// # Errors
@@ -67,7 +67,7 @@ impl Construct {
             ));
         }
 
-        let update = Update {
+        let optional_contact = OptionalContact {
             first_name,
             last_name,
             display_name,
@@ -75,20 +75,23 @@ impl Construct {
             phone_number,
         };
 
-        if update.is_empty() {
+        if optional_contact.is_empty() {
             return Err(AppError::EmptyUpdate);
         }
 
-        Ok(Self { id, update })
+        Ok(Self {
+            id,
+            optional_contact,
+        })
     }
 
     #[allow(dead_code)]
     const fn is_empty(&self) -> bool {
-        self.update.first_name.is_none()
-            && self.update.last_name.is_none()
-            && self.update.display_name.is_none()
-            && self.update.email.is_none()
-            && self.update.phone_number.is_none()
+        self.optional_contact.first_name.is_none()
+            && self.optional_contact.last_name.is_none()
+            && self.optional_contact.display_name.is_none()
+            && self.optional_contact.email.is_none()
+            && self.optional_contact.phone_number.is_none()
     }
 }
 
@@ -148,11 +151,17 @@ mod tests {
         .unwrap();
 
         assert_eq!(edits.id, 1);
-        assert_eq!(edits.update.display_name, Some("Nickname".to_string()));
-        assert_eq!(edits.update.phone_number, Some("123-233-1221".to_string()));
-        assert_eq!(edits.update.first_name, None);
-        assert_eq!(edits.update.last_name, None);
-        assert_eq!(edits.update.email, None);
+        assert_eq!(
+            edits.optional_contact.display_name,
+            Some("Nickname".to_string())
+        );
+        assert_eq!(
+            edits.optional_contact.phone_number,
+            Some("123-233-1221".to_string())
+        );
+        assert_eq!(edits.optional_contact.first_name, None);
+        assert_eq!(edits.optional_contact.last_name, None);
+        assert_eq!(edits.optional_contact.email, None);
     }
 
     #[test]
@@ -168,11 +177,14 @@ mod tests {
         .unwrap();
 
         assert_eq!(edits.id, 2);
-        assert_eq!(edits.update.first_name, Some("Mary".to_string()));
-        assert_eq!(edits.update.last_name, Some("Smith".to_string()));
-        assert_eq!(edits.update.email, Some("new@email.com".to_string()));
-        assert_eq!(edits.update.phone_number, None);
-        assert_eq!(edits.update.display_name, None);
+        assert_eq!(edits.optional_contact.first_name, Some("Mary".to_string()));
+        assert_eq!(edits.optional_contact.last_name, Some("Smith".to_string()));
+        assert_eq!(
+            edits.optional_contact.email,
+            Some("new@email.com".to_string())
+        );
+        assert_eq!(edits.optional_contact.phone_number, None);
+        assert_eq!(edits.optional_contact.display_name, None);
     }
 
     #[test]

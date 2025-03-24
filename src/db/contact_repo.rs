@@ -62,11 +62,11 @@ impl ContactRepo for Connection {
                 phone_number = COALESCE($5, phone_number)
             WHERE id = $6
             "#,
-            contact.update.first_name,
-            contact.update.last_name,
-            contact.update.display_name,
-            contact.update.email,
-            contact.update.phone_number,
+            contact.optional_contact.first_name,
+            contact.optional_contact.last_name,
+            contact.optional_contact.display_name,
+            contact.optional_contact.email,
+            contact.optional_contact.phone_number,
             contact.id
         )
         .execute(&*self.sqlite_pool)
