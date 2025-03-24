@@ -127,6 +127,16 @@ mod tests {
         Ok(())
     }
 
+    fn default_contact() -> OptionalContact {
+        OptionalContact {
+            first_name: None,
+            last_name: None,
+            display_name: None,
+            email: None,
+            phone_number: None,
+        }
+    }
+
     #[test]
     fn should_return_contact_when_given_csv() -> anyhow::Result<()> {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
@@ -140,10 +150,8 @@ mod tests {
         let alice = &contacts.unwrap()[0];
         let expected_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
-            last_name: None,
-            display_name: None,
-            email: None,
             phone_number: Some("1234567890".to_string()),
+            ..default_contact()
         };
 
         assert_eq!(alice, &expected_contact);
@@ -165,10 +173,8 @@ mod tests {
         let alice = &contacts[0];
         let expected_alice_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
-            last_name: None,
-            display_name: None,
-            email: None,
             phone_number: Some("1234567890".to_string()),
+            ..default_contact()
         };
 
         assert_eq!(alice, &expected_alice_contact);
@@ -176,10 +182,8 @@ mod tests {
         let bob = &contacts[1];
         let expected_contact = OptionalContact {
             first_name: Some("Bob".to_string()),
-            last_name: None,
-            display_name: None,
-            email: None,
             phone_number: Some("0989878721".to_string()),
+            ..default_contact()
         };
 
         assert_eq!(bob, &expected_contact);
@@ -187,10 +191,8 @@ mod tests {
         let charlie = &contacts[2];
         let charlie_expected_contact = OptionalContact {
             first_name: Some("Charlie".to_string()),
-            last_name: None,
-            display_name: None,
-            email: None,
             phone_number: Some("1989878721".to_string()),
+            ..default_contact()
         };
 
         assert_eq!(charlie, &charlie_expected_contact);
