@@ -1,7 +1,8 @@
 use crate::utils;
 use crate::utils::AppError;
+use tabled::Tabled;
 
-#[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow)]
+#[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
 pub struct Contact {
     pub first_name: String,
     pub last_name: String,
@@ -10,10 +11,11 @@ pub struct Contact {
     pub phone_number: String,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow)]
+#[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
 pub struct Indexed {
     pub id: i64,
     #[sqlx(flatten)]
+    #[tabled(inline)]
     pub contact: Contact,
 }
 
@@ -125,6 +127,7 @@ impl Contact {
         })
     }
 }
+
 #[cfg(test)]
 mod tests {
     use crate::utils::AppError;
