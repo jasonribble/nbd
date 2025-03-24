@@ -2,6 +2,7 @@
 
 mod tests {
     use assert_cmd::Command;
+    use sqlx::SqlitePool;
 
     fn create_command() -> Command {
         Command::cargo_bin(get_cli_name()).unwrap()
@@ -11,6 +12,25 @@ mod tests {
         let package_name = env!("CARGO_PKG_NAME");
         let cli_name = format!("{}-cli", package_name);
         cli_name.to_string()
+    }
+
+    async fn clean_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
+        // Execute each query directly on the pool instead of using a transaction
+        sqlx::query!("PRAGMA foreign_keys = OFF")
+            .execute(pool)
+            .await?;
+
+        sqlx::query!("DELETE FROM contacts_metadata")
+            .execute(pool)
+            .await?;
+
+        sqlx::query!("DELETE FROM contacts").execute(pool).await?;
+
+        sqlx::query!("PRAGMA foreign_keys = ON")
+            .execute(pool)
+            .await?;
+
+        Ok(())
     }
 
     #[test]
@@ -129,11 +149,24 @@ mod tests {
     #[test]
     fn test_import() {
         let mut cmd = create_command();
-        cmd.arg("import")
-            .arg("example.csv");
+        cmd.arg("import").arg("example.csv");
 
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully imported"));
+    }
+
+    #[tokio::test]
+    async fn should_say_no_contacts_when_contacts_are_empty() -> anyhow::Result<()> {
+        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        clean_database(&pool).await?;
+
+        let mut cmd = create_command();
+        cmd.arg("show");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("No contacts yet!"));
+        Ok(())
     }
 }

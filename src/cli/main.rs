@@ -52,7 +52,11 @@ async fn main() -> anyhow::Result<()> {
         Commands::Show => {
             let contacts = data_repo.get_all_contacts().await?;
 
-            println!("{contacts:?}");
+            if contacts.len() < 1 {
+                println!("No contacts yet!");
+            } else {
+                println!("{contacts:?}");
+            }
         }
         Commands::Get(value) => {
             let id = value.id;
