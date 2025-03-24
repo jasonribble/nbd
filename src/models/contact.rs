@@ -18,7 +18,7 @@ pub struct Indexed {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct OptionalContact {
+pub struct Optional {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub display_name: Option<String>,
@@ -26,7 +26,7 @@ pub struct OptionalContact {
     pub phone_number: Option<String>,
 }
 
-impl OptionalContact {
+impl Optional {
     pub const fn is_empty(&self) -> bool {
         self.first_name.is_none()
             && self.last_name.is_none()
@@ -39,7 +39,7 @@ impl OptionalContact {
 #[derive(Debug)]
 pub struct Construct {
     pub id: i64,
-    pub optional_contact: OptionalContact,
+    pub optional_contact: Optional,
 }
 impl Construct {
     /// # Errors
@@ -67,7 +67,7 @@ impl Construct {
             ));
         }
 
-        let optional_contact = OptionalContact {
+        let optional_contact = Optional {
             first_name,
             last_name,
             display_name,
