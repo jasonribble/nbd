@@ -172,6 +172,9 @@ mod tests {
 
     #[tokio::test]
     async fn should_show_one_contact_when_one_contact_available() -> anyhow::Result<()> {
+        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        clean_database(&pool).await?;
+
         let mut cmd = create_command();
 
         cmd.arg("create")
@@ -189,6 +192,50 @@ mod tests {
         cmd.arg("show");
 
         let expected = "1 | First Last   | First      | Last      |    123456789 | test@test.com |";
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains(expected));
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
+        let mut cmd = create_command();
+
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("First")
+            .arg("--last-name")
+            .arg("Last")
+            .arg("--email")
+            .arg("test@test.com")
+            .arg("--phone-number")
+            .arg("123-321-1233");
+
+        let mut cmd = create_command();
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("First")
+            .arg("--last-name")
+            .arg("Last")
+            .arg("--email")
+            .arg("test@test.com")
+            .arg("--phone-number")
+            .arg("123-321-1233");
+
+        let mut cmd = create_command();
+
+        cmd.arg("show");
+
+        let expected =
+            "+----+------------+-----------+--------------+---------------+--------------+
+    | id | first_name | last_name | display_name | email         | phone_number |
+    +----+------------+-----------+--------------+---------------+--------------+
+    | 1 | First      | Last      | First Last   | test@test.com | 123-321-1233 |
+    +----+------------+-----------+--------------+---------------+--------------+
+    | 2 | First      | Last      | First Last   | test@test.com | 123-321-1233 |
+    +----+------------+-----------+--------------+---------------+--------------+";
 
         cmd.assert()
             .success()

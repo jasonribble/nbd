@@ -8,6 +8,7 @@ use commander::{Cli, Commands};
 use db::{Connection, ContactRepo};
 use models::{Contact, ContactBuilder};
 use sqlx::SqlitePool;
+use tabled::Table;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -55,12 +56,7 @@ async fn main() -> anyhow::Result<()> {
             if contacts.len() < 1 {
                 println!("No contacts yet!");
             } else {
-                let table =
-                    "+----+--------------+------------+-----------+--------------+---------------+
-                    | id | display_name | first_name | last_name | phone_number |     email     |
-                    +----+--------------+------------+-----------+--------------+---------------+
-                    |  1 | First Last   | First      | Last      |    123456789 | test@test.com |
-                    +----+--------------+------------+-----------+--------------+---------------+";
+                let table = Table::new(contacts);
 
                 println!("{}", table);
             }
