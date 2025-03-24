@@ -18,14 +18,14 @@ fn get_records_from_csv(path: &Path) -> anyhow::Result<Vec<String>> {
     let mut records = Vec::new();
 
     if let Ok(headers) = reader.headers() {
-        for header_record in headers.iter() {
+        for header_record in headers {
             records.push(header_record.to_string());
         }
     }
 
     for result in reader.records() {
         let string_records = result?;
-        for string_record in string_records.iter() {
+        for string_record in &string_records {
             records.push(string_record.to_string());
         }
     }
