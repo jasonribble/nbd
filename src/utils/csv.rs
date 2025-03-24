@@ -1,6 +1,8 @@
 use csv::Reader;
 use std::path::Path;
 
+use crate::models::OptionalContact;
+
 fn read_csv(filename: &str) -> anyhow::Result<Vec<String>> {
     let path = Path::new(filename);
 
@@ -8,9 +10,7 @@ fn read_csv(filename: &str) -> anyhow::Result<Vec<String>> {
     validate_csv_file(path)?;
     validate_csv_format(path)?;
 
-    let records = get_records_from_csv(path);
-
-    records
+    get_records_from_csv(path)
 }
 
 fn get_records_from_csv(path: &Path) -> anyhow::Result<Vec<String>> {
@@ -58,6 +58,14 @@ fn validate_csv_format(path: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn csv_to_contacts(path: &Path) -> anyhow::Result<Vec<OptionalContact>> {
+    let mut reader = Reader::from_path(path)?;
+
+    let contacts: Result<Vec<OptionalContact>, csv::Error> = reader.deserialize().collect();
+
+    Ok(contacts?)
+}
+
 #[cfg(test)]
 mod tests {
     use std::io::Write;
@@ -77,7 +85,8 @@ mod tests {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
         writeln!(temp_csv, "first_name\nAlice").unwrap();
 
-        let result = read_csv(temp_csv.path().to_str().unwrap());
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let result = read_csv(temp_csv);
 
         assert!(result.is_ok());
     }
@@ -99,7 +108,8 @@ mod tests {
     fn should_error_if_file_is_empty() {
         let temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
-        let result = read_csv(temp_csv.path().to_str().unwrap());
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let result = read_csv(temp_csv);
 
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "CSV file is empty");
@@ -112,7 +122,8 @@ mod tests {
         let malformed_csv = "first_name,phone_number,email\nAlice,1234567890";
         write!(temp_csv, "{}", malformed_csv).unwrap();
 
-        let result = read_csv(temp_csv.path().to_str().unwrap());
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let result = read_csv(temp_csv);
 
         match result {
             Ok(_) => panic!("Expected invalid CSV, but was valid"),
@@ -123,11 +134,13 @@ mod tests {
     #[test]
     fn should_read_csv_with_multiple_rows() -> anyhow::Result<()> {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
-        let name_age_three_rows_content =
+        let three_contacts =
             "first_name,phone_number\nAlice,1234567890\nBob,0989878721\nCharlie,1989878721";
 
-        writeln!(temp_csv, "{}", name_age_three_rows_content)?;
-        let result = read_csv(temp_csv.path().to_str().unwrap())?;
+        writeln!(temp_csv, "{}", three_contacts)?;
+
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let result = read_csv(temp_csv)?;
 
         assert_eq!(result.len(), 8);
 
@@ -139,7 +152,9 @@ mod tests {
         let one_contact_content = "first_name,phone_number\nAlice,1234567890";
 
         writeln!(temp_csv, "{}", one_contact_content)?;
-        let records = read_csv(temp_csv.path().to_str().unwrap())?;
+
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let records = read_csv(temp_csv)?;
 
         assert_eq!(
             records,
@@ -150,6 +165,73 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn should_return_contact_when_given_csv() {}
+    fn should_return_contact_when_given_csv() -> anyhow::Result<()> {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
+        let alice_firstname_and_phone = "first_name,phone_number\nAlice,1234567890";
+
+        writeln!(temp_csv, "{}", alice_firstname_and_phone)?;
+
+        let temp_csv = temp_csv.path();
+        let contacts = csv_to_contacts(temp_csv);
+
+        let alice = &contacts.unwrap()[0];
+        let expected_contact = OptionalContact {
+            first_name: Some("Alice".to_string()),
+            last_name: None,
+            display_name: None,
+            email: None,
+            phone_number: Some("1234567890".to_string()),
+        };
+
+        assert_eq!(alice, &expected_contact);
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_return_mutilple_contacts_when_given_csv() -> anyhow::Result<()> {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
+        let three_contacts =
+            "first_name,phone_number\nAlice,1234567890\nBob,0989878721\nCharlie,1989878721";
+
+        writeln!(temp_csv, "{}", three_contacts)?;
+
+        let temp_csv = temp_csv.path();
+        let contacts = csv_to_contacts(temp_csv).unwrap();
+
+        let alice = &contacts[0];
+        let expected_alice_contact = OptionalContact {
+            first_name: Some("Alice".to_string()),
+            last_name: None,
+            display_name: None,
+            email: None,
+            phone_number: Some("1234567890".to_string()),
+        };
+
+        assert_eq!(alice, &expected_alice_contact);
+
+        let bob = &contacts[1];
+        let expected_contact = OptionalContact {
+            first_name: Some("Bob".to_string()),
+            last_name: None,
+            display_name: None,
+            email: None,
+            phone_number: Some("0989878721".to_string()),
+        };
+
+        assert_eq!(bob, &expected_contact);
+
+        let charlie = &contacts[2];
+        let charlie_expected_contact = OptionalContact {
+            first_name: Some("Charlie".to_string()),
+            last_name: None,
+            display_name: None,
+            email: None,
+            phone_number: Some("1989878721".to_string()),
+        };
+
+        assert_eq!(charlie, &charlie_expected_contact);
+
+        Ok(())
+    }
 }
