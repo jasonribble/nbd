@@ -3,34 +3,14 @@ use std::path::Path;
 
 use crate::models::OptionalContact;
 
-fn read_csv(filename: &str) -> anyhow::Result<Vec<String>> {
+fn process_csv_to_contacts(filename: &str) -> anyhow::Result<Vec<OptionalContact>> {
     let path = Path::new(filename);
 
     validate_csv_extension(path)?;
     validate_csv_file(path)?;
     validate_csv_format(path)?;
 
-    get_records_from_csv(path)
-}
-
-fn get_records_from_csv(path: &Path) -> anyhow::Result<Vec<String>> {
-    let mut reader = Reader::from_path(path)?;
-    let mut records = Vec::new();
-
-    if let Ok(headers) = reader.headers() {
-        for header_record in headers {
-            records.push(header_record.to_string());
-        }
-    }
-
-    for result in reader.records() {
-        let string_records = result?;
-        for string_record in &string_records {
-            records.push(string_record.to_string());
-        }
-    }
-
-    Ok(records)
+    csv_to_contacts(path)
 }
 
 fn validate_csv_extension(path: &Path) -> anyhow::Result<()> {
@@ -75,7 +55,7 @@ mod tests {
 
     #[test]
     fn shoud_return_error_when_invalid_extension() {
-        let invalid_call = read_csv("notacsv.txt");
+        let invalid_call = process_csv_to_contacts("notacsv.txt");
 
         assert!(invalid_call.is_err());
     }
@@ -86,7 +66,7 @@ mod tests {
         writeln!(temp_csv, "first_name\nAlice").unwrap();
 
         let temp_csv = temp_csv.path().to_str().unwrap();
-        let result = read_csv(temp_csv);
+        let result = process_csv_to_contacts(temp_csv);
 
         assert!(result.is_ok());
     }
@@ -95,7 +75,7 @@ mod tests {
     fn should_return_error_when_file_not_found() {
         let non_exisistent_file_path = "non_existent.csv";
 
-        let result = read_csv(non_exisistent_file_path);
+        let result = process_csv_to_contacts(non_exisistent_file_path);
 
         assert!(result.is_err());
         assert_eq!(
@@ -109,7 +89,7 @@ mod tests {
         let temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
         let temp_csv = temp_csv.path().to_str().unwrap();
-        let result = read_csv(temp_csv);
+        let result = process_csv_to_contacts(temp_csv);
 
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "CSV file is empty");
@@ -123,7 +103,7 @@ mod tests {
         write!(temp_csv, "{}", malformed_csv).unwrap();
 
         let temp_csv = temp_csv.path().to_str().unwrap();
-        let result = read_csv(temp_csv);
+        let result = process_csv_to_contacts(temp_csv);
 
         match result {
             Ok(_) => panic!("Expected invalid CSV, but was valid"),
@@ -140,26 +120,9 @@ mod tests {
         writeln!(temp_csv, "{}", three_contacts)?;
 
         let temp_csv = temp_csv.path().to_str().unwrap();
-        let result = read_csv(temp_csv)?;
+        let result = process_csv_to_contacts(temp_csv)?;
 
-        assert_eq!(result.len(), 8);
-
-        Ok(())
-    }
-    #[test]
-    fn should_return_matching_list_when_given_csv() -> anyhow::Result<()> {
-        let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
-        let one_contact_content = "first_name,phone_number\nAlice,1234567890";
-
-        writeln!(temp_csv, "{}", one_contact_content)?;
-
-        let temp_csv = temp_csv.path().to_str().unwrap();
-        let records = read_csv(temp_csv)?;
-
-        assert_eq!(
-            records,
-            vec!["first_name", "phone_number", "Alice", "1234567890"]
-        );
+        assert_eq!(result.len(), 3);
 
         Ok(())
     }
