@@ -170,32 +170,27 @@ mod tests {
         let temp_csv = temp_csv.path();
         let contacts = csv_to_contacts(temp_csv).unwrap();
 
-        let alice = &contacts[0];
-        let expected_alice_contact = OptionalContact {
-            first_name: Some("Alice".to_string()),
-            phone_number: Some("1234567890".to_string()),
-            ..default_contact()
-        };
+        let expected_contacts = vec![
+            OptionalContact {
+                first_name: Some("Alice".to_string()),
+                phone_number: Some("1234567890".to_string()),
+                ..default_contact()
+            },
+            OptionalContact {
+                first_name: Some("Bob".to_string()),
+                phone_number: Some("0989878721".to_string()),
+                ..default_contact()
+            },
+            OptionalContact {
+                first_name: Some("Charlie".to_string()),
+                phone_number: Some("1989878721".to_string()),
+                ..default_contact()
+            },
+        ];
 
-        assert_eq!(alice, &expected_alice_contact);
-
-        let bob = &contacts[1];
-        let expected_contact = OptionalContact {
-            first_name: Some("Bob".to_string()),
-            phone_number: Some("0989878721".to_string()),
-            ..default_contact()
-        };
-
-        assert_eq!(bob, &expected_contact);
-
-        let charlie = &contacts[2];
-        let charlie_expected_contact = OptionalContact {
-            first_name: Some("Charlie".to_string()),
-            phone_number: Some("1989878721".to_string()),
-            ..default_contact()
-        };
-
-        assert_eq!(charlie, &charlie_expected_contact);
+        for (index, expected_contact) in expected_contacts.iter().enumerate() {
+            assert_eq!(&contacts[index], expected_contact);
+        }
 
         Ok(())
     }
