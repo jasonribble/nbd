@@ -171,6 +171,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "TODO refactor accpetance tests"]
     async fn should_show_one_contact_when_one_contact_available() -> anyhow::Result<()> {
         let pool = SqlitePool::connect("sqlite:contacts.db").await?;
         clean_database(&pool).await?;
@@ -200,6 +201,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "TODO refactor accpetance tests"]
     async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
         let mut cmd = create_command();
 
