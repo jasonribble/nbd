@@ -127,16 +127,6 @@ mod tests {
         Ok(())
     }
 
-    fn default_contact() -> OptionalContact {
-        OptionalContact {
-            first_name: None,
-            last_name: None,
-            display_name: None,
-            email: None,
-            phone_number: None,
-        }
-    }
-
     #[test]
     fn should_return_contact_when_given_csv() -> anyhow::Result<()> {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
@@ -151,7 +141,7 @@ mod tests {
         let expected_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
             phone_number: Some("1234567890".to_string()),
-            ..default_contact()
+            ..OptionalContact::template()
         };
 
         assert_eq!(alice, &expected_contact);
@@ -174,17 +164,17 @@ mod tests {
             OptionalContact {
                 first_name: Some("Alice".to_string()),
                 phone_number: Some("1234567890".to_string()),
-                ..default_contact()
+                ..OptionalContact::template()
             },
             OptionalContact {
                 first_name: Some("Bob".to_string()),
                 phone_number: Some("0989878721".to_string()),
-                ..default_contact()
+                ..OptionalContact::template()
             },
             OptionalContact {
                 first_name: Some("Charlie".to_string()),
                 phone_number: Some("1989878721".to_string()),
-                ..default_contact()
+                ..OptionalContact::template()
             },
         ];
 

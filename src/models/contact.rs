@@ -37,6 +37,16 @@ impl Optional {
             && self.email.is_none()
             && self.phone_number.is_none()
     }
+
+    pub fn template() -> Self {
+        Self {
+            first_name: None,
+            last_name: None,
+            display_name: None,
+            email: None,
+            phone_number: None,
+        }
+    }
 }
 
 #[derive(Debug)]
