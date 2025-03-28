@@ -102,8 +102,16 @@ impl ContactRepo for Connection {
     }
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
-        println!("{contact:?}");
-        Ok(1)
+        let query = "INSERT INTO contacts (first_name) VALUES (?)";
+
+        let result = sqlx::query(query)
+            .bind(&contact.first_name)
+            .execute(&*self.sqlite_pool)
+            .await?;
+
+        let contact_id = result.last_insert_rowid();
+
+        Ok(contact_id)
     }
 }
 
@@ -218,6 +226,33 @@ mod tests {
         let result = data_repo.save_optional_contact(test_contact).await?;
 
         assert_eq!(result, 1);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn should_save_two_option_contact_in_database() -> anyhow::Result<()> {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let test_contact = models::OptionalContact {
+            first_name: Some("Jason".to_string()),
+            ..models::OptionalContact::template()
+        };
+
+        let result = data_repo.save_optional_contact(test_contact).await?;
+
+        assert_eq!(result, 1);
+
+        let another_contact = models::OptionalContact {
+            first_name: Some("Alice".to_string()),
+            ..models::OptionalContact::template()
+        };
+
+        let result = data_repo.save_optional_contact(another_contact).await?;
+
+        assert_eq!(result, 2);
 
         Ok(())
     }
