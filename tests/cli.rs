@@ -149,11 +149,31 @@ mod tests {
     #[test]
     fn test_import() {
         let mut cmd = create_command();
-        cmd.arg("import").arg("example.csv");
+        cmd.arg("import").arg("tests/fixtures/example.csv");
 
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully imported"));
+    }
+
+    #[test]
+    fn should_fail_when_given_incorrect_file() {
+        let mut cmd = create_command();
+        cmd.arg("import").arg("tests/fixtures/example.txt");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("File must have .csv extension"));
+    }
+
+    #[test]
+    fn should_fail_when_given_blank_csv() {
+        let mut cmd = create_command();
+        cmd.arg("import").arg("tests/fixtures/blank.csv");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("CSV file is empty"));
     }
 
     #[tokio::test]

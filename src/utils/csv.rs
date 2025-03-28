@@ -3,7 +3,14 @@ use std::path::Path;
 
 use crate::models::OptionalContact;
 
-fn process_csv_to_contacts(filename: &str) -> anyhow::Result<Vec<OptionalContact>> {
+/// # Errors
+///
+/// This function will return an error if
+/// - Does not end with .csv
+/// - Is an empty CSV
+/// - Fails to open the file
+/// - Is an invalid CSV
+pub fn process_csv_to_contacts(filename: &str) -> anyhow::Result<Vec<OptionalContact>> {
     let path = Path::new(filename);
 
     validate_csv_extension(path)?;
