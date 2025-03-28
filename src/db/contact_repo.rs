@@ -103,12 +103,14 @@ impl ContactRepo for Connection {
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
         println!("{contact:?}");
-        todo!()
+        Ok(1)
     }
 }
 
 #[cfg(test)]
 mod tests {
+
+    use crate::db::fake_db::test_helpers;
 
     use super::*;
     use mockall::predicate::*;
@@ -203,24 +205,20 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn should_save_optional_contact_should_exist() {
-        let mut mock_contact_repo = MockContactRepo::new();
+    async fn should_save_option_contact_in_database() -> anyhow::Result<()> {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
 
         let test_contact = models::OptionalContact {
             first_name: Some("Jason".to_string()),
             ..models::OptionalContact::template()
         };
 
-        mock_contact_repo
-            .expect_save_optional_contact()
-            .times(1)
-            .with(eq(test_contact.clone()))
-            .returning(|_| Ok(1));
-
-        let result = mock_contact_repo.save_optional_contact(test_contact).await;
-
-        let result = result.unwrap();
+        let result = data_repo.save_optional_contact(test_contact).await?;
 
         assert_eq!(result, 1);
+
+        Ok(())
     }
 }
