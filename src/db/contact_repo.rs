@@ -7,6 +7,7 @@ use super::{connection::Connection, MetadataRepo};
 #[async_trait]
 pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
+    async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64>;
     async fn get_all_contacts(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
     async fn update_contact(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
     async fn get_contact_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
@@ -99,10 +100,15 @@ impl ContactRepo for Connection {
 
         Ok(contact_id.last_insert_rowid())
     }
+
+    async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
+        todo!()
+    }
 }
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     use mockall::predicate::*;
 
@@ -193,5 +199,27 @@ mod tests {
         let actual_contact = result.unwrap();
 
         assert_eq!(actual_contact.id, 1);
+    }
+
+    #[tokio::test]
+    async fn should_save_optional_contact_should_exist() {
+        let mut mock_contact_repo = MockContactRepo::new();
+
+        let test_contact = models::OptionalContact {
+            first_name: Some("Jason".to_string()),
+            ..models::OptionalContact::template()
+        };
+
+        mock_contact_repo
+            .expect_save_optional_contact()
+            .times(1)
+            .with(eq(test_contact.clone()))
+            .returning(|_| Ok(1));
+
+        let result = mock_contact_repo.save_optional_contact(test_contact).await;
+
+        let result = result.unwrap();
+
+        assert_eq!(result, 1);
     }
 }
