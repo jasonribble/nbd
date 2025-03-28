@@ -38,7 +38,8 @@ impl Optional {
             && self.phone_number.is_none()
     }
 
-    pub fn template() -> Self {
+    #[must_use]
+    pub const fn template() -> Self {
         Self {
             first_name: None,
             last_name: None,

@@ -1,7 +1,7 @@
 use std::env;
 
 mod commander;
-use nbd::{db, models};
+use nbd::{db, models, utils};
 
 use clap::Parser;
 use commander::{Cli, Commands};
@@ -74,8 +74,18 @@ async fn main() -> anyhow::Result<()> {
 
             println!("Successfully deleted contact {contact_id}");
         }
-        Commands::Import(filename) => {
-            println!("Feature Coming Soon: Successfully imported {filename:?} (but not really)");
+        Commands::Import(args) => {
+            let list_of_contacts = utils::process_csv_to_contacts(args.filename.as_str());
+
+            match list_of_contacts {
+                Ok(contacts) => {
+                    println!("{contacts:?}");
+                    println!("Feature Coming Soon: Successfully imported (but not really)");
+                }
+                Err(error) => {
+                    println!("{error}");
+                }
+            }
         }
     }
 

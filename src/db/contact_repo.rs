@@ -102,6 +102,7 @@ impl ContactRepo for Connection {
     }
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
+        println!("{contact:?}");
         todo!()
     }
 }
