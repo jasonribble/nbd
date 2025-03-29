@@ -31,7 +31,6 @@ impl ContactRepo for Connection {
 
         let contact_id = result.last_insert_rowid();
 
-        // Creates metadata for that contact
         self.create_metadata(contact_id).await?;
 
         Ok(contact_id)
@@ -102,10 +101,27 @@ impl ContactRepo for Connection {
     }
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
-        let query = "INSERT INTO contacts (first_name) VALUES (?)";
+        let mut display_name = contact.display_name.clone();
+
+        if display_name.is_none() {
+            let firstname = contact.first_name.clone();
+            let lastname = contact.last_name.clone();
+            display_name = Some(format!(
+                "{} {}",
+                firstname.unwrap_or_default(),
+                lastname.unwrap_or_default()
+            ));
+        }
+
+        let query =
+            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email) VALUES (?, ?, ?, ?, ?)";
 
         let result = sqlx::query(query)
             .bind(&contact.first_name)
+            .bind(&contact.last_name)
+            .bind(display_name)
+            .bind(&contact.phone_number)
+            .bind(&contact.email)
             .execute(&*self.sqlite_pool)
             .await?;
 
@@ -231,6 +247,87 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn should_be_able_to_retreive_full_contact_when_saved_full_contact() -> anyhow::Result<()>
+    {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let test_contact = models::OptionalContact {
+            first_name: Some("Ada".to_string()),
+            last_name: Some("Lovelace".to_string()),
+            display_name: Some("Addy".to_string()),
+            email: Some("ada@lovelace.rs".to_string()),
+            phone_number: Some("1233211233".to_string()),
+        };
+
+        let contact_id = data_repo
+            .save_optional_contact(test_contact.clone())
+            .await?;
+
+        let saved_contact = data_repo.get_contact_by_id(contact_id).await?;
+
+        let saved_contact = saved_contact.contact;
+
+        assert_eq!(saved_contact.first_name, test_contact.first_name.unwrap());
+        assert_eq!(saved_contact.last_name, test_contact.last_name.unwrap());
+        assert_eq!(
+            saved_contact.phone_number,
+            test_contact.phone_number.unwrap()
+        );
+
+        assert_eq!(saved_contact.email, test_contact.email.unwrap());
+
+        assert_eq!(
+            saved_contact.display_name,
+            test_contact.display_name.unwrap()
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn should_default_to_first_and_last_name_for_display_name() -> anyhow::Result<()> {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let test_contact = models::OptionalContact {
+            first_name: Some("Ada".to_string()),
+            last_name: Some("Lovelace".to_string()),
+            ..models::OptionalContact::template()
+        };
+
+        let contact_id = data_repo
+            .save_optional_contact(test_contact.clone())
+            .await?;
+
+        let saved_contact = data_repo.get_contact_by_id(contact_id).await?;
+
+        let saved_contact = saved_contact.contact;
+
+        assert_eq!(saved_contact.display_name, "Ada Lovelace".to_string());
+
+        let test_contact = models::OptionalContact {
+            first_name: Some("Jason".to_string()),
+            last_name: Some("Ribble".to_string()),
+            ..models::OptionalContact::template()
+        };
+
+        let contact_id = data_repo
+            .save_optional_contact(test_contact.clone())
+            .await?;
+
+        let saved_contact = data_repo.get_contact_by_id(contact_id).await?;
+
+        let saved_contact = saved_contact.contact;
+
+        assert_eq!(saved_contact.display_name, "Jason Ribble".to_string());
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn should_save_two_option_contact_in_database() -> anyhow::Result<()> {
         let pool = test_helpers::setup_in_memory_db().await;
 
@@ -241,18 +338,18 @@ mod tests {
             ..models::OptionalContact::template()
         };
 
-        let result = data_repo.save_optional_contact(test_contact).await?;
+        let contact_id = data_repo.save_optional_contact(test_contact).await?;
 
-        assert_eq!(result, 1);
+        assert_eq!(contact_id, 1);
 
         let another_contact = models::OptionalContact {
             first_name: Some("Alice".to_string()),
             ..models::OptionalContact::template()
         };
 
-        let result = data_repo.save_optional_contact(another_contact).await?;
+        let contact_id = data_repo.save_optional_contact(another_contact).await?;
 
-        assert_eq!(result, 2);
+        assert_eq!(contact_id, 2);
 
         Ok(())
     }
