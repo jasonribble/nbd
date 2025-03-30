@@ -1,7 +1,7 @@
 use std::env;
 
 mod commander;
-use nbd::{db, models, utils};
+use nbd::{db, models};
 
 use clap::Parser;
 use commander::{Cli, Commands};
@@ -20,8 +20,6 @@ async fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    // You can check for the existence of subcommands, and if found use their
-    // matches just as you would the top level cmd
     match &cli.command {
         Commands::Create(value) => {
             let contact = Contact::new(
@@ -75,12 +73,13 @@ async fn main() -> anyhow::Result<()> {
             println!("Successfully deleted contact {contact_id}");
         }
         Commands::Import(args) => {
-            let list_of_contacts = utils::process_csv_to_contacts(args.filename.as_str());
+            let result_of_import = data_repo
+                .import_contacts_by_csv(args.filename.as_str())
+                .await;
 
-            match list_of_contacts {
-                Ok(contacts) => {
-                    println!("{contacts:?}");
-                    println!("Feature Coming Soon: Successfully imported (but not really)");
+            match result_of_import {
+                Ok(number_of_imports) => {
+                    println!("Successfully imported {} contact", number_of_imports);
                 }
                 Err(error) => {
                     println!("{error}");
