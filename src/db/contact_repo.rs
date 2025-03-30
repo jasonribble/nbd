@@ -134,7 +134,7 @@ impl ContactRepo for Connection {
         let contacts = utils::process_csv_to_contacts(filename)?;
 
         let mut number_of_contacts_added = 0;
-        for contact in contacts.iter() {
+        for contact in &contacts {
             self.save_optional_contact(contact.clone()).await?;
             number_of_contacts_added += 1;
         }
@@ -259,7 +259,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn should_be_able_to_retreive_full_contact_when_saved_full_contact() -> anyhow::Result<()>
+    async fn should_be_able_to_retrieve_full_contact_when_saved_full_contact() -> anyhow::Result<()>
     {
         let pool = test_helpers::setup_in_memory_db().await;
 
@@ -377,9 +377,9 @@ mod tests {
 
         let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
 
-        let number_of_contcacts = data_repo.get_all_contacts().await?.len() as i64;
+        let number_of_contacts = data_repo.get_all_contacts().await?.len() as i64;
 
-        assert_eq!(number_of_contcacts, number_of_imported_contacts);
+        assert_eq!(number_of_contacts, number_of_imported_contacts);
 
         Ok(())
     }
@@ -395,9 +395,9 @@ mod tests {
 
         let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
 
-        let number_of_contcacts = data_repo.get_all_contacts().await?.len() as i64;
+        let number_of_contacts = data_repo.get_all_contacts().await?.len() as i64;
 
-        assert_eq!(number_of_contcacts, number_of_imported_contacts);
+        assert_eq!(number_of_contacts, number_of_imported_contacts);
 
         Ok(())
     }

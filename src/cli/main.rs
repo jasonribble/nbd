@@ -79,7 +79,7 @@ async fn main() -> anyhow::Result<()> {
 
             match result_of_import {
                 Ok(number_of_imports) => {
-                    println!("Successfully imported {} contact", number_of_imports);
+                    println!("Successfully imported {number_of_imports} contact");
                 }
                 Err(error) => {
                     println!("{error}");
