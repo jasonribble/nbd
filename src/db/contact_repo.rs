@@ -1,4 +1,4 @@
-use crate::models;
+use crate::{models, utils};
 use async_trait::async_trait;
 
 use super::{connection::Connection, MetadataRepo};
@@ -8,6 +8,7 @@ use super::{connection::Connection, MetadataRepo};
 pub trait ContactRepo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64>;
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64>;
+    async fn import_contacts_by_csv(&self, filename: &str) -> anyhow::Result<i64>;
     async fn get_all_contacts(&self) -> anyhow::Result<Vec<models::IndexedContact>>;
     async fn update_contact(&self, update: models::ContactBuilder) -> anyhow::Result<()>;
     async fn get_contact_by_id(&self, id: i64) -> anyhow::Result<models::IndexedContact>;
@@ -128,6 +129,17 @@ impl ContactRepo for Connection {
         let contact_id = result.last_insert_rowid();
 
         Ok(contact_id)
+    }
+    async fn import_contacts_by_csv(&self, filename: &str) -> anyhow::Result<i64> {
+        let contacts = utils::process_csv_to_contacts(filename)?;
+
+        let mut number_of_contacts_added = 0;
+        for contact in contacts.iter() {
+            self.save_optional_contact(contact.clone()).await?;
+            number_of_contacts_added += 1;
+        }
+
+        Ok(number_of_contacts_added)
     }
 }
 
@@ -350,6 +362,42 @@ mod tests {
         let contact_id = data_repo.save_optional_contact(another_contact).await?;
 
         assert_eq!(contact_id, 2);
+
+        Ok(())
+    }
+
+    // Integration Test
+    #[tokio::test]
+    async fn should_store_one_contact_when_given_alice_csv() -> anyhow::Result<()> {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let example_csv = "tests/fixtures/alice.csv";
+
+        let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
+
+        let number_of_contcacts = data_repo.get_all_contacts().await?.len() as i64;
+
+        assert_eq!(number_of_contcacts, number_of_imported_contacts);
+
+        Ok(())
+    }
+
+    // Integration Test
+    #[tokio::test]
+    async fn should_store_three_contacts_when_given_example() -> anyhow::Result<()> {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let example_csv = "tests/fixtures/example.csv";
+
+        let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
+
+        let number_of_contcacts = data_repo.get_all_contacts().await?.len() as i64;
+
+        assert_eq!(number_of_contcacts, number_of_imported_contacts);
 
         Ok(())
     }

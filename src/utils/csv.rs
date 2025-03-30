@@ -55,10 +55,9 @@ fn csv_to_contacts(path: &Path) -> anyhow::Result<Vec<OptionalContact>> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use std::io::Write;
     use tempfile::NamedTempFile;
-
-    use super::*;
 
     #[test]
     fn shoud_return_error_when_invalid_extension() {
