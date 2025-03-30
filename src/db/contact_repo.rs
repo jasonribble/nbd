@@ -128,6 +128,8 @@ impl ContactRepo for Connection {
 
         let contact_id = result.last_insert_rowid();
 
+        self.create_metadata(contact_id).await?;
+
         Ok(contact_id)
     }
     async fn import_contacts_by_csv(&self, filename: &str) -> anyhow::Result<i64> {
@@ -398,6 +400,25 @@ mod tests {
         let number_of_contacts = data_repo.get_all_contacts().await?.len() as i64;
 
         assert_eq!(number_of_contacts, number_of_imported_contacts);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn should_create_metadata_when_importing_csv() -> anyhow::Result<()> {
+        let pool = test_helpers::setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+    
+        let example_csv = "tests/fixtures/example.csv";
+
+        let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
+
+        let result_expected_metadata = data_repo.get_metadata_by_id(number_of_imported_contacts).await;
+
+        let expected_metadata = result_expected_metadata.unwrap();
+
+        assert_eq!(number_of_imported_contacts, expected_metadata.contact_id);
 
         Ok(())
     }
