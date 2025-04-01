@@ -1,3 +1,4 @@
+use crate::utils;
 use csv::Reader;
 use std::path::Path;
 
@@ -49,8 +50,20 @@ fn csv_to_contacts(path: &Path) -> anyhow::Result<Vec<OptionalContact>> {
     let mut reader = Reader::from_path(path)?;
 
     let contacts: Result<Vec<OptionalContact>, csv::Error> = reader.deserialize().collect();
+    let contacts = contacts?;
 
-    Ok(contacts?)
+    let mut valid_contacts: Vec<OptionalContact> = Vec::new();
+
+    for contact in contacts.into_iter() {
+        if let Some(phone_number) = &contact.phone_number {
+            if utils::is_not_valid_phone_number(phone_number) {
+                return Err(anyhow::anyhow!("Invalid Phone Number"));
+            }
+        }
+
+        valid_contacts.push(contact);
+    }
+    Ok(valid_contacts)
 }
 
 #[cfg(test)]
@@ -115,6 +128,20 @@ mod tests {
             Ok(_) => panic!("Expected invalid CSV, but was valid"),
             Err(e) => assert_eq!(e.to_string(), "Invalid CSV format"),
         }
+    }
+
+    #[test]
+    fn should_error_when_given_an_invalid_phone_number() {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
+
+        let malformed_csv = "first_name,phone_number\nAlice,not_a_phone_number";
+        write!(temp_csv, "{}", malformed_csv).unwrap();
+
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let result = process_csv_to_contacts(temp_csv);
+
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "Invalid Phone Number");
     }
 
     #[test]
