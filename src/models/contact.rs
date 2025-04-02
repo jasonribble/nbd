@@ -1,5 +1,6 @@
 use crate::utils;
 use crate::utils::AppError;
+use chrono::NaiveDate;
 use tabled::Tabled;
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
@@ -9,6 +10,7 @@ pub struct Contact {
     pub display_name: String,
     pub email: String,
     pub phone_number: String,
+    pub birthday: NaiveDate,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
@@ -118,6 +120,7 @@ impl Contact {
         last_name: &str,
         email: &str,
         phone_number: &str,
+        birthday: NaiveDate,
     ) -> Result<Self, AppError> {
         let display_name = format!("{first_name} {last_name}");
 
@@ -135,6 +138,7 @@ impl Contact {
             display_name,
             email: email.to_owned(),
             phone_number: phone_number.to_owned(),
+            birthday,
         })
     }
 }
@@ -147,7 +151,13 @@ mod tests {
 
     #[test]
     fn test_display_name() {
-        let person = Contact::new("Jason", "Ribble", "john@example.com", "123-456-7890");
+        let person = Contact::new(
+            "Jason",
+            "Ribble",
+            "john@example.com",
+            "123-456-7890",
+            chrono::NaiveDate::default(),
+        );
         let display_name = "Jason Ribble".to_string();
 
         assert_eq!(person.unwrap().display_name, display_name)
@@ -232,5 +242,20 @@ mod tests {
         assert!(
             matches!(result, Err(AppError::InvalidPhoneNumber(phone_number)) if phone_number == "123-123-12345")
         );
+    }
+
+    #[test]
+    fn should_accept_a_birthdate() {
+        let birthday = chrono::NaiveDate::from_ymd_opt(1990, 5, 15).unwrap();
+        let result = Contact::new(
+            "Alice",
+            "Lovelace",
+            "ada@lovelace.com",
+            "123-321-1233",
+            birthday,
+        )
+        .unwrap();
+
+        assert_eq!(result.birthday, birthday);
     }
 }

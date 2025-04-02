@@ -27,6 +27,7 @@ async fn main() -> anyhow::Result<()> {
                 value.last_name.as_deref().unwrap_or(""),
                 value.email.as_deref().unwrap_or(""),
                 value.phone_number.as_deref().unwrap_or(""),
+                chrono::NaiveDate::default(),
             );
 
             let contact = contact.unwrap();
