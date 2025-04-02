@@ -26,8 +26,16 @@ mod tests {
 
         let data_repo = Connection::new(pool);
 
-        let example_contact =
-            Contact::new("Lewis", "Carroll", "lewis@wonderland.com", "777-777-7777").unwrap();
+        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
+
+        let example_contact = Contact::new(
+            "Lewis",
+            "Carroll",
+            "lewis@wonderland.com",
+            "777-777-7777",
+            birthday,
+        )
+        .unwrap();
 
         let result_contact_id = data_repo.save_contact(example_contact).await;
         let contact_id = result_contact_id.unwrap();
@@ -39,16 +47,15 @@ mod tests {
         assert_eq!(contact_id, expected_metadata.contact_id);
     }
 
-
     #[tokio::test]
     async fn test_save_optional_contact_get_metadata() {
         let pool = test_helpers::setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
-        let example_contact = OptionalContact { 
+        let example_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
-           ..OptionalContact::template() 
+            ..OptionalContact::template()
         };
 
         let result_contact_id = data_repo.save_optional_contact(example_contact).await;
@@ -67,8 +74,16 @@ mod tests {
 
         let data_repo = Connection::new(pool);
 
-        let example_contact =
-            Contact::new("Lewis", "Carroll", "lewis@wonderland.com", "777-777-7777").unwrap();
+        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
+
+        let example_contact = Contact::new(
+            "Lewis",
+            "Carroll",
+            "lewis@wonderland.com",
+            "777-777-7777",
+            birthday,
+        )
+        .unwrap();
 
         let result_contact_id = data_repo.save_contact(example_contact.clone()).await;
 

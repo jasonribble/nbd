@@ -157,8 +157,14 @@ mod tests {
     async fn test_save_contact() {
         let mut mock_contact_repo = MockContactRepo::new();
 
-        let test_contact =
-            models::Contact::new("John", "Smith", "johndoe@example.com", "123-456-7890").unwrap();
+        let test_contact = models::Contact::new(
+            "John",
+            "Smith",
+            "johndoe@example.com",
+            "123-456-7890",
+            chrono::NaiveDate::default(),
+        )
+        .unwrap();
 
         mock_contact_repo
             .expect_save_contact()
@@ -179,8 +185,14 @@ mod tests {
 
         let contacts = vec![models::IndexedContact {
             id: 1,
-            contact: models::Contact::new("John", "Doe", "johndoe@example.com", "1234567890")
-                .unwrap(),
+            contact: models::Contact::new(
+                "John",
+                "Doe",
+                "johndoe@example.com",
+                "1234567890",
+                chrono::NaiveDate::default(),
+            )
+            .unwrap(),
         }];
 
         mock_contact_repo
@@ -223,8 +235,14 @@ mod tests {
 
         let contact = models::IndexedContact {
             id: 1,
-            contact: models::Contact::new("John", "Doe", "johndoe@example.com", "1234567890")
-                .unwrap(),
+            contact: models::Contact::new(
+                "John",
+                "Doe",
+                "johndoe@example.com",
+                "1234567890",
+                chrono::NaiveDate::default(),
+            )
+            .unwrap(),
         };
 
         mock_contact_repo
@@ -409,12 +427,14 @@ mod tests {
         let pool = test_helpers::setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
-    
+
         let example_csv = "tests/fixtures/example.csv";
 
         let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
 
-        let result_expected_metadata = data_repo.get_metadata_by_id(number_of_imported_contacts).await;
+        let result_expected_metadata = data_repo
+            .get_metadata_by_id(number_of_imported_contacts)
+            .await;
 
         let expected_metadata = result_expected_metadata.unwrap();
 

@@ -44,6 +44,9 @@ pub struct CreateCommand {
 
     #[arg(short, long, value_name = "Phone")]
     pub phone_number: Option<String>,
+
+    #[arg(short, long, value_name = "Birthday")]
+    pub birthday: Option<String>,
 }
 
 #[derive(Args, Debug)]
