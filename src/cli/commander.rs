@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
@@ -46,7 +47,7 @@ pub struct CreateCommand {
     pub phone_number: Option<String>,
 
     #[arg(short, long, value_name = "Birthday")]
-    pub birthday: Option<String>,
+    pub birthday: Option<NaiveDate>,
 }
 
 #[derive(Args, Debug)]

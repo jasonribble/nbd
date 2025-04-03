@@ -11,7 +11,7 @@ authors = ["Jason Ribble <jason@companionops.com>"]
 [dependencies]
 anyhow = "1.0.86"
 async-trait = "0.1.80"
-chrono = "0.4.38"
+chrono = { version = "0.4.38", features = ["serde"] }
 clap = { version = "4.5.9", features = ["derive"] }
 csv = "1.3.1"
 dotenvy = "0.15.0"
