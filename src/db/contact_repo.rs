@@ -19,14 +19,15 @@ pub trait ContactRepo {
 impl ContactRepo for Connection {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
-        (first_name, last_name, display_name, email, phone_number)
-        VALUES (?, ?, ?, ?, ?)";
+        (first_name, last_name, display_name, email, phone_number, birthday)
+        VALUES (?, ?, ?, ?, ?, ?)";
         let result = sqlx::query(query)
             .bind(&contact.first_name)
             .bind(&contact.last_name)
             .bind(&contact.display_name)
             .bind(&contact.email)
             .bind(&contact.phone_number)
+            .bind(&contact.birthday)
             .execute(&*self.sqlite_pool)
             .await?;
 
@@ -38,8 +39,7 @@ impl ContactRepo for Connection {
     }
 
     async fn get_all_contacts(&self) -> anyhow::Result<Vec<models::IndexedContact>> {
-        let get_contacts_query =
-            "SELECT id, first_name, last_name, display_name, email, phone_number
+        let get_contacts_query = "SELECT *
              FROM contacts
              ORDER BY id";
 
@@ -115,7 +115,11 @@ impl ContactRepo for Connection {
         }
 
         let query =
-            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email) VALUES (?, ?, ?, ?, ?)";
+            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email, birthday) VALUES (?, ?, ?, ?, ?, ?)";
+
+        let birthday = contact
+            .birthday
+            .unwrap_or(chrono::NaiveDate::from_ymd_opt(1, 1, 1).unwrap());
 
         let result = sqlx::query(query)
             .bind(&contact.first_name)
@@ -123,6 +127,7 @@ impl ContactRepo for Connection {
             .bind(display_name)
             .bind(&contact.phone_number)
             .bind(&contact.email)
+            .bind(birthday)
             .execute(&*self.sqlite_pool)
             .await?;
 
@@ -221,6 +226,7 @@ mod tests {
             Some("some@email.com".to_string()),
             None,
             None,
+            None,
         )
         .unwrap();
 
@@ -291,6 +297,7 @@ mod tests {
             display_name: Some("Addy".to_string()),
             email: Some("ada@lovelace.rs".to_string()),
             phone_number: Some("1233211233".to_string()),
+            birthday: Some(chrono::NaiveDate::default()),
         };
 
         let contact_id = data_repo
@@ -327,6 +334,7 @@ mod tests {
         let test_contact = models::OptionalContact {
             first_name: Some("Ada".to_string()),
             last_name: Some("Lovelace".to_string()),
+            birthday: Some(chrono::NaiveDate::default()),
             ..models::OptionalContact::template()
         };
 

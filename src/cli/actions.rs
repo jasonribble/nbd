@@ -41,6 +41,7 @@ impl Actions {
             command.display_name.clone(),
             command.email.clone(),
             command.phone_number.clone(),
+            None,
         )
         .unwrap();
 

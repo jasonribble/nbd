@@ -28,6 +28,7 @@ pub struct Optional {
     pub display_name: Option<String>,
     pub email: Option<String>,
     pub phone_number: Option<String>,
+    pub birthday: Option<NaiveDate>,
 }
 
 impl Optional {
@@ -48,6 +49,7 @@ impl Optional {
             display_name: None,
             email: None,
             phone_number: None,
+            birthday: None,
         }
     }
 }
@@ -68,6 +70,7 @@ impl Construct {
         email: Option<String>,
         phone_number: Option<String>,
         display_name: Option<String>,
+        birthday: Option<NaiveDate>,
     ) -> Result<Self, AppError> {
         let maybe_email = email.as_deref().unwrap_or("");
 
@@ -89,6 +92,7 @@ impl Construct {
             display_name,
             email,
             phone_number,
+            birthday,
         };
 
         if optional_contact.is_empty() {
@@ -172,6 +176,7 @@ mod tests {
             None,
             Some("123-233-1221".to_string()),
             Some("Nickname".to_string()),
+            None,
         )
         .unwrap();
 
@@ -198,6 +203,7 @@ mod tests {
             Some("new@email.com".to_string()),
             None,
             None,
+            None,
         )
         .unwrap();
 
@@ -214,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
-        let result = Construct::new(1, None, None, None, None, None);
+        let result = Construct::new(1, None, None, None, None, None, None);
         assert!(result.is_err());
     }
 
@@ -227,6 +233,7 @@ mod tests {
             Some("invalid@example".to_string()),
             None,
             None,
+            None,
         );
         assert!(result.is_err());
         assert!(matches!(result, Err(AppError::InvalidEmail(email)) if email == "invalid@example"));
@@ -234,7 +241,15 @@ mod tests {
 
     #[test]
     fn test_invalid_construct_phone_number() {
-        let result = Construct::new(1, None, None, None, Some("123-123-12345".to_string()), None);
+        let result = Construct::new(
+            1,
+            None,
+            None,
+            None,
+            Some("123-123-12345".to_string()),
+            None,
+            None,
+        );
 
         println!("{result:?}");
         assert!(result.is_err());

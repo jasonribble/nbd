@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn current_number_of_migrations() {
-        let migrations = 4;
+        let migrations = 5;
 
         let entries = get_migration_entries().unwrap();
 
