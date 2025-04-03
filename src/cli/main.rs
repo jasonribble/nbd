@@ -1,14 +1,14 @@
 use std::env;
 
+use db::Connection;
+use nbd::db;
+
+mod actions;
 mod commander;
-use nbd::{db, models};
 
 use clap::Parser;
 use commander::{Cli, Commands};
-use db::{Connection, ContactRepo};
-use models::{Contact, ContactBuilder};
 use sqlx::SqlitePool;
-use tabled::Table;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -21,72 +21,12 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Create(value) => {
-            let contact = Contact::new(
-                value.first_name.as_deref().unwrap_or(""),
-                value.last_name.as_deref().unwrap_or(""),
-                value.email.as_deref().unwrap_or(""),
-                value.phone_number.as_deref().unwrap_or(""),
-                chrono::NaiveDate::default(),
-            );
-
-            let contact = contact.unwrap();
-
-            let id = data_repo.save_contact(contact).await?;
-
-            println!("Successfully saved contact {id}");
-        }
-        Commands::Edit(value) => {
-            let contact = ContactBuilder::new(
-                value.id,
-                value.first_name.clone(),
-                value.last_name.clone(),
-                value.display_name.clone(),
-                value.email.clone(),
-                value.phone_number.clone(),
-            )
-            .unwrap();
-
-            let _ = data_repo.update_contact(contact).await;
-        }
-        Commands::Show => {
-            let contacts = data_repo.get_all_contacts().await?;
-
-            if contacts.is_empty() {
-                println!("No contacts yet!");
-            } else {
-                let table = Table::new(contacts);
-                println!("{table}");
-            }
-        }
-        Commands::Get(value) => {
-            let id = value.id;
-
-            let contact = data_repo.get_contact_by_id(id).await?;
-
-            println!("{contact:?}");
-        }
-        Commands::Delete(value) => {
-            let id = value.id;
-
-            let contact_id = data_repo.delete_contact_by_id(id).await?;
-
-            println!("Successfully deleted contact {contact_id}");
-        }
-        Commands::Import(args) => {
-            let result_of_import = data_repo
-                .import_contacts_by_csv(args.filename.as_str())
-                .await;
-
-            match result_of_import {
-                Ok(number_of_imports) => {
-                    println!("Successfully imported {number_of_imports} contact");
-                }
-                Err(error) => {
-                    println!("{error}");
-                }
-            }
-        }
+        Commands::Create(value) => actions::create_contact(value, &data_repo).await?,
+        Commands::Edit(value) => actions::edit_contact(value, &data_repo).await?,
+        Commands::Show => actions::show_all_contacts(&data_repo).await?,
+        Commands::Get(value) => actions::get_contact(value, &data_repo).await?,
+        Commands::Delete(value) => actions::delete_contact(value, &data_repo).await?,
+        Commands::Import(value) => actions::import_contacts(value, &data_repo).await?,
     }
 
     Ok(())
