@@ -289,4 +289,18 @@ mod tests {
             .stdout(predicates::str::contains(expected));
         Ok(())
     }
+
+    #[test]
+    fn should_accept_a_firstname_and_birthday() {
+        let mut cmd = create_command();
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("Molly")
+            .arg("--birthday")
+            .arg("1970-01-01");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("Successfully saved contact"));
+    }
 }

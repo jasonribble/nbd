@@ -128,11 +128,11 @@ impl Contact {
     ) -> Result<Self, AppError> {
         let display_name = format!("{first_name} {last_name}");
 
-        if utils::is_not_valid_email(email) {
+        if utils::is_not_valid_email(email) && !email.is_empty() {
             return Err(AppError::InvalidEmail(email.to_owned()));
         }
 
-        if utils::is_not_valid_phone_number(phone_number) {
+        if utils::is_not_valid_phone_number(phone_number) && !phone_number.is_empty() {
             return Err(AppError::InvalidPhoneNumber(phone_number.to_owned()));
         }
 
