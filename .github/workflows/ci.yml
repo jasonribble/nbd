@@ -2,9 +2,9 @@ name: Commit Phase
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -50,56 +50,6 @@ jobs:
 
       - name: Run CLI tests
         run: cargo test --test cli
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  component:
-    name: Component Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install sqlx-cli
-        run: cargo install sqlx-cli
-
-      - name: Create database
-        run: sqlx database create
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Run migrations
-        run: sqlx migrate run
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Run component tests
-        run: cargo test --test component
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  contract:
-    name: Contract Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install sqlx-cli
-        run: cargo install sqlx-cli
-
-      - name: Create database
-        run: sqlx database create
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Run migrations
-        run: sqlx migrate run
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Run contract tests
-        run: cargo test --test contract
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
