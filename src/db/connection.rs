@@ -16,7 +16,7 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use crate::{
-        db::{fake_db::test_helpers, Connection, ContactRepo, MetadataRepo},
+        db::{test_helpers, Connection, ContactRepo, MetadataRepo},
         models::{Contact, OptionalContact},
     };
 
