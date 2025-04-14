@@ -3,6 +3,7 @@ mod tests {
     use assert_cmd::Command;
     use nbd::db::ContactRepo;
     use nbd::{db::Connection, models::Contact};
+    use serial_test::serial;
     use sqlx::SqlitePool;
 
     fn create_command() -> Command {
@@ -78,7 +79,10 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn should_be_able_to_create_full_contact() {
+        clean_database().await.unwrap();
+
         let mut cmd = create_command();
         cmd.arg("create")
             .arg("--first-name")
@@ -98,7 +102,10 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn should_delete_a_contact_when_one_is_present() -> anyhow::Result<()> {
+        clean_database().await.unwrap();
+
         let pool = SqlitePool::connect("sqlite:contacts.db").await?;
         let data_repo = Connection::new(pool);
 
@@ -177,7 +184,10 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn should_import_one_contact_when_importing_alice_csv() -> anyhow::Result<()> {
+        clean_database().await.unwrap();
+
         let mut cmd = create_command();
         cmd.arg("import").arg("tests/fixtures/alice.csv");
 
@@ -226,7 +236,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "TODO: fix acceptance tests"]
+    #[serial]
     async fn should_say_no_contacts_when_contacts_are_empty() -> anyhow::Result<()> {
         clean_database().await?;
 
@@ -240,27 +250,35 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "TODO refactor acceptance tests"]
+    #[serial]
     async fn should_show_one_contact_when_one_contact_available() -> anyhow::Result<()> {
         clean_database().await?;
 
-        let mut cmd = create_command();
+        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let data_repo = Connection::new(pool);
 
-        cmd.arg("create")
-            .arg("--first-name")
-            .arg("First")
-            .arg("--last-name")
-            .arg("Last")
-            .arg("--email")
-            .arg("test@test.com")
-            .arg("--phone-number")
-            .arg("123-321-1233");
+        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
+
+        let example_contact = Contact::new(
+            "Lewis",
+            "Carroll",
+            "lewis@wonderland.com",
+            "777-777-7777",
+            birthday,
+        )
+        .unwrap();
+
+        data_repo.save_contact(example_contact).await.unwrap();
 
         let mut cmd = create_command();
 
         cmd.arg("show");
 
-        let expected = "1 | First Last   | First      | Last      |    123456789 | test@test.com |";
+        let expected = r#"+----+------------+-----------+---------------+----------------------+--------------+------------+
+| id | first_name | last_name | display_name  | email                | phone_number | birthday   |
++----+------------+-----------+---------------+----------------------+--------------+------------+
+| 1  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |
++----+------------+-----------+---------------+----------------------+--------------+------------+"#;
 
         cmd.assert()
             .success()
@@ -269,44 +287,41 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "TODO refactor acceptance tests"]
+    #[serial]
     async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
-        let mut cmd = create_command();
+        clean_database().await.unwrap();
 
-        cmd.arg("create")
-            .arg("--first-name")
-            .arg("First")
-            .arg("--last-name")
-            .arg("Last")
-            .arg("--email")
-            .arg("test@test.com")
-            .arg("--phone-number")
-            .arg("123-321-1233");
+        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let data_repo = Connection::new(pool);
 
-        let mut cmd = create_command();
-        cmd.arg("create")
-            .arg("--first-name")
-            .arg("First")
-            .arg("--last-name")
-            .arg("Last")
-            .arg("--email")
-            .arg("test@test.com")
-            .arg("--phone-number")
-            .arg("123-321-1233");
+        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
+
+        let example_contact = Contact::new(
+            "Lewis",
+            "Carroll",
+            "lewis@wonderland.com",
+            "777-777-7777",
+            birthday,
+        )
+        .unwrap();
+
+        data_repo
+            .save_contact(example_contact.clone())
+            .await
+            .unwrap();
+        data_repo.save_contact(example_contact).await.unwrap();
 
         let mut cmd = create_command();
 
         cmd.arg("show");
 
-        let expected =
-            "+----+------------+-----------+--------------+---------------+--------------+
-    | id | first_name | last_name | display_name | email         | phone_number |
-    +----+------------+-----------+--------------+---------------+--------------+
-    | 1 | First      | Last      | First Last   | test@test.com | 123-321-1233 |
-    +----+------------+-----------+--------------+---------------+--------------+
-    | 2 | First      | Last      | First Last   | test@test.com | 123-321-1233 |
-    +----+------------+-----------+--------------+---------------+--------------+";
-
+        let expected = r#"+----+------------+-----------+---------------+----------------------+--------------+------------+
+| id | first_name | last_name | display_name  | email                | phone_number | birthday   |
++----+------------+-----------+---------------+----------------------+--------------+------------+
+| 1  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |
++----+------------+-----------+---------------+----------------------+--------------+------------+
+| 2  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |
++----+------------+-----------+---------------+----------------------+--------------+------------+"#;
         cmd.assert()
             .success()
             .stdout(predicates::str::contains(expected));
@@ -314,7 +329,10 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn should_accept_a_firstname_and_birthday() {
+        clean_database().await.unwrap();
+
         let mut cmd = create_command();
         cmd.arg("create")
             .arg("--first-name")
@@ -325,7 +343,5 @@ mod tests {
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully saved contact"));
-
-        clean_database().await.unwrap();
     }
 }
