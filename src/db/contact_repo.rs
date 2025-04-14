@@ -153,7 +153,7 @@ impl ContactRepo for Connection {
 #[cfg(test)]
 mod tests {
 
-    use crate::db::fake_db::test_helpers;
+    use crate::db::test_helpers;
 
     use super::*;
     use mockall::predicate::*;
