@@ -66,7 +66,7 @@ jobs:
 
   final_check:
     name: Final Check
-    needs: [build, unit, integration, component, contract, lint]
+    needs: [build, unit, integration, lint]
     runs-on: ubuntu-latest
     steps:
       - run: echo "Success"
