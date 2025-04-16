@@ -27,7 +27,7 @@ impl ContactRepo for Connection {
             .bind(&contact.display_name)
             .bind(&contact.email)
             .bind(&contact.phone_number)
-            .bind(&contact.birthday)
+            .bind(contact.birthday)
             .execute(&*self.sqlite_pool)
             .await?;
 
