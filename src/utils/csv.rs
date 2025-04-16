@@ -54,14 +54,14 @@ fn csv_to_contacts(path: &Path) -> anyhow::Result<Vec<OptionalContact>> {
 
     let mut valid_contacts: Vec<OptionalContact> = Vec::new();
 
-    for contact in contacts.into_iter() {
+    for contact in &contacts {
         if let Some(phone_number) = &contact.phone_number {
             if utils::is_not_valid_phone_number(phone_number) {
                 return Err(anyhow::anyhow!("Invalid Phone Number"));
             }
         }
 
-        valid_contacts.push(contact);
+        valid_contacts.push(contact.clone());
     }
     Ok(valid_contacts)
 }

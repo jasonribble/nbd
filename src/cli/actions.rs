@@ -11,7 +11,7 @@ pub struct Actions {
 }
 
 impl Actions {
-    pub fn new(data_repo: Connection) -> Self {
+    pub const fn new(data_repo: Connection) -> Self {
         Self { data_repo }
     }
 
