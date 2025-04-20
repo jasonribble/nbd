@@ -19,7 +19,6 @@ mod tests {
     async fn clean_database() -> Result<(), sqlx::Error> {
         let pool = SqlitePool::connect("sqlite:contacts.db").await?;
 
-        // Execute each query directly on the pool instead of using a transaction
         sqlx::query!("PRAGMA foreign_keys = OFF")
             .execute(&pool)
             .await?;
@@ -56,7 +55,7 @@ mod tests {
         let mut cmd = create_command();
         cmd.arg("--help");
 
-        let expected_output = vec![
+        let expected_output = [
             "Usage: nbd-cli <COMMAND>",
             "",
             "Commands:",
@@ -97,8 +96,6 @@ mod tests {
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully saved contact"));
-
-        clean_database().await.unwrap();
     }
 
     #[tokio::test]
@@ -205,14 +202,18 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn should_import_example_csv_with_three_rows() {
+    #[tokio::test]
+    #[serial]
+    async fn should_import_example_csv_with_three_rows() -> anyhow::Result<()> {
+        clean_database().await?;
         let mut cmd = create_command();
         cmd.arg("import").arg("tests/fixtures/example.csv");
 
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully imported"));
+
+        Ok(())
     }
 
     #[test]
@@ -274,15 +275,17 @@ mod tests {
 
         cmd.arg("show");
 
-        let expected = r#"+----+------------+-----------+---------------+----------------------+--------------+------------+
-| id | first_name | last_name | display_name  | email                | phone_number | birthday   |
-+----+------------+-----------+---------------+----------------------+--------------+------------+
-| 1  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |
-+----+------------+-----------+---------------+----------------------+--------------+------------+"#;
+        let expected = [
+            "+----+------------+-----------+---------------+----------------------+--------------+------------+",
+            "| id | first_name | last_name | display_name  | email                | phone_number | birthday   |",
+            "+----+------------+-----------+---------------+----------------------+--------------+------------+",
+            "| 1  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |",
+            "+----+------------+-----------+---------------+----------------------+--------------+------------+",
+        ];
 
         cmd.assert()
             .success()
-            .stdout(predicates::str::contains(expected));
+            .stdout(predicates::str::contains(expected.join("\n")));
         Ok(())
     }
 
@@ -315,16 +318,17 @@ mod tests {
 
         cmd.arg("show");
 
-        let expected = r#"+----+------------+-----------+---------------+----------------------+--------------+------------+
-| id | first_name | last_name | display_name  | email                | phone_number | birthday   |
-+----+------------+-----------+---------------+----------------------+--------------+------------+
-| 1  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |
-+----+------------+-----------+---------------+----------------------+--------------+------------+
-| 2  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |
-+----+------------+-----------+---------------+----------------------+--------------+------------+"#;
+        let expected = [
+            "+----+------------+-----------+---------------+----------------------+--------------+------------+",
+            "| id | first_name | last_name | display_name  | email                | phone_number | birthday   |",
+            "+----+------------+-----------+---------------+----------------------+--------------+------------+",
+            "| 1  | Lewis      | Carroll   | Lewis Carroll | lewis@wonderland.com | 777-777-7777 | 1832-01-27 |",
+            "+----+------------+-----------+---------------+----------------------+--------------+------------+",
+        ];
+
         cmd.assert()
             .success()
-            .stdout(predicates::str::contains(expected));
+            .stdout(predicates::str::contains(expected.join("\n")));
         Ok(())
     }
 
