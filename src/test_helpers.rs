@@ -29,7 +29,7 @@ pub async fn setup_in_memory_db() -> SqlitePool {
 }
 
 #[cfg(test)]
-pub fn get_migration_entries() -> Result<Vec<std::path::PathBuf>, anyhow::Error> {
+fn get_migration_entries() -> Result<Vec<std::path::PathBuf>, anyhow::Error> {
     let mut entries = std::fs::read_dir("migrations")?
         .map(|res| res.map(|entry| entry.path()))
         .collect::<Result<Vec<_>, std::io::Error>>()?;

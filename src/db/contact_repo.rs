@@ -152,10 +152,8 @@ impl ContactRepo for Connection {
 
 #[cfg(test)]
 mod tests {
-
-    use crate::db::test_helpers;
-
     use super::*;
+    use crate::test_helpers::setup_in_memory_db;
     use mockall::predicate::*;
 
     #[tokio::test]
@@ -268,7 +266,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_save_option_contact_in_database() -> anyhow::Result<()> {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -287,7 +285,7 @@ mod tests {
     #[tokio::test]
     async fn should_be_able_to_retrieve_full_contact_when_saved_full_contact() -> anyhow::Result<()>
     {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -327,7 +325,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_default_to_first_and_last_name_for_display_name() -> anyhow::Result<()> {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -369,7 +367,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_save_two_option_contact_in_database() -> anyhow::Result<()> {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -397,7 +395,7 @@ mod tests {
     // Integration Test
     #[tokio::test]
     async fn should_store_one_contact_when_given_alice_csv() -> anyhow::Result<()> {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -415,7 +413,7 @@ mod tests {
     // Integration Test
     #[tokio::test]
     async fn should_store_three_contacts_when_given_example() -> anyhow::Result<()> {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -432,7 +430,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_create_metadata_when_importing_csv() -> anyhow::Result<()> {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
