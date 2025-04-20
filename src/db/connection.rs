@@ -16,13 +16,14 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use crate::{
-        db::{test_helpers, Connection, ContactRepo, MetadataRepo},
+        db::{Connection, ContactRepo, MetadataRepo},
         models::{Contact, OptionalContact},
+        test_helpers::setup_in_memory_db,
     };
 
     #[tokio::test]
     async fn test_save_contact_get_metadata() {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -49,7 +50,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_save_optional_contact_get_metadata() {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
@@ -70,7 +71,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_contact_deletes_metadata() {
-        let pool = test_helpers::setup_in_memory_db().await;
+        let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
 
