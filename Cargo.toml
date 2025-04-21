@@ -3,10 +3,11 @@ name = "nbd"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [".", "test_utils"]
+
 [package.metadata]
 authors = ["Jason Ribble <jason@companionops.com>"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.86"
@@ -25,8 +26,8 @@ sqlx = { version = "0.8.1", features = [
 tabled = "0.18.0"
 tokio = { version = "1.28.0", features = ["full", "test-util"] }
 
-
 [dev-dependencies]
+test_utils = { path = "./test_utils" }
 mockall = "0.12.1"
 assert_cmd = "2.0.14"
 predicates = "3.1"
