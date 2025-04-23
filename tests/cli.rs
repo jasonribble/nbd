@@ -348,4 +348,32 @@ mod tests {
             .success()
             .stdout(predicates::str::contains("Successfully saved contact"));
     }
+
+    #[tokio::test]
+    #[serial]
+    async fn should_set_birthday_when_provided() -> anyhow::Result<()> {
+        clean_database().await.unwrap();
+
+        let mut cmd = create_command();
+        cmd.arg("create")
+            .arg("--first-name")
+            .arg("nbd")
+            .arg("--birthday")
+            .arg("2024-06-06");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("Successfully saved contact"));
+
+        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let data_repo = Connection::new(pool);
+
+        let contact = data_repo.get_contact_by_id(1).await?.contact;
+
+        let birthday = chrono::NaiveDate::from_ymd_opt(2024, 6, 6).unwrap();
+
+        assert_eq!(contact.birthday, birthday);
+
+        Ok(())
+    }
 }
