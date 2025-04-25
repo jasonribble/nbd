@@ -392,7 +392,6 @@ mod tests {
         Ok(())
     }
 
-    // Integration Test
     #[tokio::test]
     async fn should_store_one_contact_when_given_alice_csv() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
@@ -410,7 +409,6 @@ mod tests {
         Ok(())
     }
 
-    // Integration Test
     #[tokio::test]
     async fn should_store_three_contacts_when_given_example() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
@@ -445,6 +443,28 @@ mod tests {
         let expected_metadata = result_expected_metadata.unwrap();
 
         assert_eq!(number_of_imported_contacts, expected_metadata.contact_id);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn should_save_csv_with_one_row_and_birthday() -> anyhow::Result<()> {
+        let pool = setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let example_csv = "tests/fixtures/birthday.csv";
+
+        data_repo.import_contacts_by_csv(example_csv).await?;
+
+        let contacts = data_repo.get_all_contacts().await?;
+
+        let aldous_huxley_birthday = contacts[0].contact.birthday;
+
+        assert_eq!(
+            aldous_huxley_birthday,
+            chrono::NaiveDate::from_ymd_opt(1894, 07, 26).unwrap()
+        );
 
         Ok(())
     }
