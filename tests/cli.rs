@@ -91,7 +91,9 @@ mod tests {
             .arg("--email")
             .arg("test@test.com")
             .arg("--phone-number")
-            .arg("123-321-1233");
+            .arg("123-321-1233")
+            .arg("--birthday")
+            .arg("1970-01-01");
 
         cmd.assert()
             .success()
@@ -106,14 +108,12 @@ mod tests {
         let pool = SqlitePool::connect("sqlite:contacts.db").await?;
         let data_repo = Connection::new(pool);
 
-        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
-
         let example_contact = Contact::new(
             "Lewis",
             "Carroll",
             "lewis@wonderland.com",
             "777-777-7777",
-            birthday,
+            "1832-1-27",
         )
         .unwrap();
 
@@ -258,14 +258,12 @@ mod tests {
         let pool = SqlitePool::connect("sqlite:contacts.db").await?;
         let data_repo = Connection::new(pool);
 
-        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
-
         let example_contact = Contact::new(
             "Lewis",
             "Carroll",
             "lewis@wonderland.com",
             "777-777-7777",
-            birthday,
+            "1832-1-27",
         )
         .unwrap();
 
@@ -297,14 +295,12 @@ mod tests {
         let pool = SqlitePool::connect("sqlite:contacts.db").await?;
         let data_repo = Connection::new(pool);
 
-        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
-
         let example_contact = Contact::new(
             "Lewis",
             "Carroll",
             "lewis@wonderland.com",
             "777-777-7777",
-            birthday,
+            "1832-1-27",
         )
         .unwrap();
 
