@@ -136,9 +136,8 @@ impl Contact {
             return Err(AppError::InvalidPhoneNumber(phone_number.to_owned()));
         }
 
-        let birthday = match NaiveDate::parse_from_str(birthday, "%Y-%m-%d") {
-            Ok(date) => date,
-            Err(_) => return Err(AppError::InvalidBirthday(birthday.to_string())),
+        let Ok(birthday) = NaiveDate::parse_from_str(birthday, "%Y-%m-%d") else {
+            return Err(AppError::InvalidBirthday(birthday.to_string()));
         };
 
         Ok(Self {
