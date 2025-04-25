@@ -165,7 +165,7 @@ mod tests {
             "Smith",
             "johndoe@example.com",
             "123-456-7890",
-            chrono::NaiveDate::default(),
+            "1970-1-1",
         )
         .unwrap();
 
@@ -193,7 +193,7 @@ mod tests {
                 "Doe",
                 "johndoe@example.com",
                 "1234567890",
-                chrono::NaiveDate::default(),
+                "1970-01-01",
             )
             .unwrap(),
         }];
@@ -244,7 +244,7 @@ mod tests {
                 "Doe",
                 "johndoe@example.com",
                 "1234567890",
-                chrono::NaiveDate::default(),
+                "1970-01-01",
             )
             .unwrap(),
         };

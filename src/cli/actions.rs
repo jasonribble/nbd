@@ -21,7 +21,7 @@ impl Actions {
             command.last_name.as_deref().unwrap_or(""),
             command.email.as_deref().unwrap_or(""),
             command.phone_number.as_deref().unwrap_or(""),
-            chrono::NaiveDate::default(),
+            command.birthday.as_deref().unwrap_or(""),
         );
 
         let contact = contact.unwrap();

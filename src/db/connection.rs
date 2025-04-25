@@ -27,14 +27,12 @@ mod tests {
 
         let data_repo = Connection::new(pool);
 
-        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
-
         let example_contact = Contact::new(
             "Lewis",
             "Carroll",
             "lewis@wonderland.com",
             "777-777-7777",
-            birthday,
+            "1832-1-27",
         )
         .unwrap();
 
@@ -75,14 +73,12 @@ mod tests {
 
         let data_repo = Connection::new(pool);
 
-        let birthday = chrono::NaiveDate::from_ymd_opt(1832, 1, 27).unwrap();
-
         let example_contact = Contact::new(
             "Lewis",
             "Carroll",
             "lewis@wonderland.com",
             "777-777-7777",
-            birthday,
+            "1832-1-27",
         )
         .unwrap();
 

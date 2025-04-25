@@ -118,13 +118,13 @@ impl Construct {
 impl Contact {
     /// # Errors
     ///
-    /// This errors if there is an invalid email or phone number
+    /// This errors if there is an invalid email, phone number, or birthday
     pub fn new(
         first_name: &str,
         last_name: &str,
         email: &str,
         phone_number: &str,
-        birthday: NaiveDate,
+        birthday: &str,
     ) -> Result<Self, AppError> {
         let display_name = format!("{first_name} {last_name}");
 
@@ -135,6 +135,11 @@ impl Contact {
         if utils::is_not_valid_phone_number(phone_number) && !phone_number.is_empty() {
             return Err(AppError::InvalidPhoneNumber(phone_number.to_owned()));
         }
+
+        let birthday = match NaiveDate::parse_from_str(birthday, "%Y-%m-%d") {
+            Ok(date) => date,
+            Err(_) => return Err(AppError::InvalidBirthday(birthday.to_string())),
+        };
 
         Ok(Self {
             first_name: first_name.to_owned(),
@@ -160,7 +165,7 @@ mod tests {
             "Ribble",
             "john@example.com",
             "123-456-7890",
-            chrono::NaiveDate::default(),
+            "1970-01-01",
         );
         let display_name = "Jason Ribble".to_string();
 
@@ -261,16 +266,33 @@ mod tests {
 
     #[test]
     fn should_accept_a_birthdate() {
-        let birthday = chrono::NaiveDate::from_ymd_opt(1990, 5, 15).unwrap();
         let result = Contact::new(
             "Alice",
             "Lovelace",
             "ada@lovelace.com",
             "123-321-1233",
-            birthday,
+            "1970-01-01",
         )
         .unwrap();
 
-        assert_eq!(result.birthday, birthday);
+        let expect_birthday = chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap();
+
+        assert_eq!(result.birthday, expect_birthday);
+    }
+
+    #[test]
+    fn should_return_error_when_creating_contact_with_invalid_birthday() {
+        let invalid_birthday = "1970-13-32"; // Invalid date
+        let contact_result = Contact::new(
+            "Satoshi",
+            "Nakamoto",
+            "satoshi@bitcoin.org",
+            "123-321-1234",
+            invalid_birthday,
+        );
+
+        assert!(
+            matches!(contact_result, Err(AppError::InvalidBirthday(birthday)) if birthday == invalid_birthday)
+        );
     }
 }
