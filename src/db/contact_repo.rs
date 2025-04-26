@@ -468,4 +468,33 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn should_save_csv_with_threes_row_and_birthday() -> anyhow::Result<()> {
+        let pool = setup_in_memory_db().await;
+
+        let data_repo = Connection::new(pool);
+
+        let example_csv = "tests/fixtures/three_birthdays.csv";
+
+        data_repo.import_contacts_by_csv(example_csv).await?;
+
+        let contacts = data_repo.get_all_contacts().await?;
+
+        let aldous_huxley_birthday = contacts[0].contact.birthday;
+
+        assert_eq!(
+            aldous_huxley_birthday,
+            chrono::NaiveDate::from_ymd_opt(1894, 07, 26).unwrap()
+        );
+
+        let cs_lewis_birthday = contacts[2].contact.birthday;
+
+        assert_eq!(
+            cs_lewis_birthday,
+            chrono::NaiveDate::from_ymd_opt(1898, 11, 29).unwrap()
+        );
+
+        Ok(())
+    }
 }
