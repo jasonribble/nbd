@@ -217,4 +217,21 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn should_accept_csv_that_has_iso8601_birthday() -> anyhow::Result<()> {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
+        let first_name_is8601_birthday = "first_name,birthday\nAlice,1987-07-11T00:00:00Z";
+
+        writeln!(temp_csv, "{}", first_name_is8601_birthday)?;
+
+        let temp_csv = temp_csv.path().to_str().unwrap();
+        let result = process_csv_to_contacts(temp_csv);
+
+        println!("{:?}", result);
+
+        assert!(result.is_ok());
+
+        Ok(())
+    }
 }
