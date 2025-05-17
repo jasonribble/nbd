@@ -8,7 +8,7 @@ This is a personal contact management to help people create and maintain thrivin
 
 ## Motivation
 
-The world needs a privacy-first, offline-first, personal contact manager. 
+The world needs a privacy-first, offline-first, personal contact manager.
 
 ## Development
 
@@ -17,31 +17,35 @@ This Rust project requires the following:
 - Cargo
 - sqlx-cli
 
+You can also use the nix flake. Install nix through the [nix-installer](https://github.com/DeterminateSystems/nix-installer). Once installed, run:
+
+`$ nix develop`
+
 ## Setup
 
 1. Declare the database URL, either by exporting it:
 
-   ```
-   export DATABASE_URL="sqlite:contacts.db"
-   ```
+```
+export DATABASE_URL="sqlite:contacts.db"
+```
 
-   or by making a `.env` file:
+or by making a `.env` file:
 
-   ```
-   cp .env.example .env
-   ```
+```
+cp .env.example .env
+```
 
 2. Create the database.
 
-   ```
-   $ sqlx db create
-   ```
+```
+sqlx db create
+```
 
 3. Run sql migrations
 
-   ```
-   $ sqlx migrate run
-   ```
+```
+sqlx migrate run
+```
 
 ## Usage
 
@@ -67,7 +71,13 @@ Options:
 For example
 
 ```
-cargo run create --first-name test --last-name last --email test@ttest.com --phone-number 123-231-1122
+cargo run create --first-name test --last-name last --email test@ttest.com --phone-number 123-231-1122 --birthday 1970-01-01
+```
+
+Then, you can see the contact using the `show` command
+
+```
+cargo run show
 ```
 
 Edit a contact
@@ -87,7 +97,7 @@ Options:
 
 For example
 
-`cargo run edit 5 -f Jason`
+`cargo run edit 1 -f Jason`
 
 ## Cleanup
 
