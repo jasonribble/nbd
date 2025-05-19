@@ -372,4 +372,19 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    #[serial]
+    async fn should_allow_only_first_name_when_creating() -> anyhow::Result<()> {
+        clean_database().await.unwrap();
+
+        let mut cmd = create_command();
+        cmd.arg("create").arg("--first-name").arg("Test");
+
+        cmd.assert()
+            .success()
+            .stdout(predicates::str::contains("Successfully saved contact"));
+
+        Ok(())
+    }
 }
