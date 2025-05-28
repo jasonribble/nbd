@@ -23,17 +23,13 @@ You can also use the nix flake. Install nix through the [nix-installer](https://
 
 ## Setup
 
-1. Declare the database URL, either by exporting it:
-
-```
-export DATABASE_URL="sqlite:contacts.db"
-```
-
-or by making a `.env` file:
+1. Copy the `.env.example` .env
 
 ```
 cp .env.example .env
 ```
+
+Optionally update environment variables
 
 2. Create the database.
 
@@ -97,7 +93,9 @@ Options:
 
 For example
 
-`cargo run edit 1 -f Jason`
+```
+cargo run edit 1 -f Jason
+```
 
 ## Cleanup
 
