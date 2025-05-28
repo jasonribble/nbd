@@ -61,6 +61,12 @@ fn csv_to_contacts(path: &Path) -> anyhow::Result<Vec<OptionalContact>> {
             }
         }
 
+        if let Some(email) = &contact.email {
+            if utils::is_not_valid_email(email) {
+                return Err(anyhow::anyhow!("Invalid Email"));
+            }
+        }
+
         valid_contacts.push(contact.clone());
     }
     Ok(valid_contacts)
@@ -142,6 +148,21 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "Invalid Phone Number");
+    }
+
+    #[test]
+    fn should_error_when_given_an_invalid_email() {
+        let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
+
+        let malformed_email_csv = "first_name,email\nAlice,invalid@email";
+        write!(temp_csv, "{}", malformed_email_csv).unwrap();
+
+        let temp_csv_path = temp_csv.path().to_str().unwrap();
+
+        let contacts = process_csv_to_contacts(temp_csv_path);
+
+        assert!(contacts.is_err());
+        assert_eq!(contacts.unwrap_err().to_string(), "Invalid Email");
     }
 
     #[test]
