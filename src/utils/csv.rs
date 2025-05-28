@@ -79,8 +79,8 @@ mod tests {
     use tempfile::NamedTempFile;
 
     #[test]
-    fn shoud_return_error_when_invalid_extension() {
-        let invalid_call = process_csv_to_contacts("notacsv.txt");
+    fn should_return_error_when_invalid_extension() {
+        let invalid_call = process_csv_to_contacts("not_a_csv.txt");
 
         assert!(invalid_call.is_err());
     }
@@ -98,9 +98,9 @@ mod tests {
 
     #[test]
     fn should_return_error_when_file_not_found() {
-        let non_exisistent_file_path = "non_existent.csv";
+        let non_existent_file_path = "non_existent.csv";
 
-        let result = process_csv_to_contacts(non_exisistent_file_path);
+        let result = process_csv_to_contacts(non_existent_file_path);
 
         assert!(result.is_err());
         assert_eq!(
@@ -204,7 +204,7 @@ mod tests {
     }
 
     #[test]
-    fn should_return_mutilple_contacts_when_given_csv() -> anyhow::Result<()> {
+    fn should_return_multiple_contacts_when_given_csv() -> anyhow::Result<()> {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
         let three_contacts =
             "first_name,phone_number\nAlice,1234567890\nBob,0989878721\nCharlie,1989878721";
