@@ -7,7 +7,7 @@ edition = "2021"
 members = [".", "test_utils"]
 
 [package.metadata]
-authors = ["Jason Ribble <jason@companionops.com>"]
+authors = ["Jason Ribble <git@j6r.org>"]
 
 [dependencies]
 anyhow = "1.0.86"
