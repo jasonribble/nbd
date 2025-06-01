@@ -119,6 +119,9 @@ impl Contact {
     /// # Errors
     ///
     /// This errors if there is an invalid email, phone number, or birthday
+    ///
+    /// # Panics
+    /// This will panic if `NaiveDate` fails
     pub fn new(
         first_name: &str,
         last_name: &str,
