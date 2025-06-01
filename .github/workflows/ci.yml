@@ -48,6 +48,9 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Check sqlx queries are up to date
+        run: cargo sqlx prepare --check -- --all-targets --all-features
+
       - name: Run CLI tests
         run: cargo test --test cli
         env:
@@ -63,9 +66,6 @@ jobs:
           components: clippy
       - name: Lint check
         run: cargo clippy -- -D clippy::pedantic -W clippy::nursery
-
-      - name: Check sqlx queries are up to date
-        run: cargo sqlx prepare --check -- --all-targets --all-features
 
   final_check:
     name: Final Check
