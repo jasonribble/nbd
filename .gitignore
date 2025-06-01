@@ -2,3 +2,5 @@
 *.db
 .env
 contacts.db-*
+
+# Commit .sqlx/ files to enable builds without database connection

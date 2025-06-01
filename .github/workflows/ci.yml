@@ -64,6 +64,9 @@ jobs:
       - name: Lint check
         run: cargo clippy -- -D clippy::pedantic -W clippy::nursery
 
+      - name: Check sqlx queries are up to date
+        run: cargo sqlx prepare --check -- --all-targets --all-features
+
   final_check:
     name: Final Check
     needs: [build, unit, integration, lint]

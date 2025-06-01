@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM SQLITE_SEQUENCE WHERE name = 'contacts_metadata'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "31329770e4e0f627af41eba7866238bd9560183d300cc4f504855c51f3d03d5e"
+}
