@@ -67,9 +67,23 @@ jobs:
       - name: Lint check
         run: cargo clippy -- -D clippy::pedantic -W clippy::nursery
 
-  final_check:
-    name: Final Check
+  publish:
+    name: Publish Release
+    if: startsWith(github.ref, 'refs/tags/v')  # Only run on version tags
     needs: [build, unit, integration, lint]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     steps:
-      - run: echo "Success"
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/release/nbd-cli
+          generate_release_notes: true
