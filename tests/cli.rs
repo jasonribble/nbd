@@ -5,43 +5,26 @@ mod tests {
     use nbd::{db::Connection, models::Contact};
     use serial_test::serial;
     use sqlx::SqlitePool;
+    use test_utils::setup_in_memory_db;
+
+    // Get a fresh in-memory database pool for each test
+    async fn get_db_pool() -> SqlitePool {
+        // Create a new in-memory database each time
+        setup_in_memory_db().await
+    }
 
     fn create_command() -> Command {
-        Command::cargo_bin(get_cli_name()).unwrap()
+        let mut cmd = Command::cargo_bin(get_cli_name()).unwrap();
+
+        cmd.env("SQLX_OFFLINE", "true");
+
+        cmd
     }
 
     fn get_cli_name() -> String {
         let package_name = env!("CARGO_PKG_NAME");
         let cli_name = format!("{}-cli", package_name);
         cli_name.to_string()
-    }
-
-    async fn clean_database() -> Result<(), sqlx::Error> {
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
-
-        sqlx::query!("PRAGMA foreign_keys = OFF")
-            .execute(&pool)
-            .await?;
-
-        sqlx::query!("DELETE FROM contacts_metadata")
-            .execute(&pool)
-            .await?;
-
-        sqlx::query!("DELETE FROM contacts").execute(&pool).await?;
-
-        sqlx::query!("DELETE FROM SQLITE_SEQUENCE WHERE name = 'contacts'")
-            .execute(&pool)
-            .await?;
-
-        sqlx::query!("DELETE FROM SQLITE_SEQUENCE WHERE name = 'contacts_metadata'")
-            .execute(&pool)
-            .await?;
-
-        sqlx::query!("PRAGMA foreign_keys = ON")
-            .execute(&pool)
-            .await?;
-
-        Ok(())
     }
 
     #[test]
@@ -81,8 +64,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_be_able_to_create_full_contact() {
-        clean_database().await.unwrap();
-
         let mut cmd = create_command();
         cmd.arg("create")
             .arg("--first-name")
@@ -104,9 +85,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_delete_a_contact_when_one_is_present() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
-
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let pool = get_db_pool().await;
         let data_repo = Connection::new(pool);
 
         let example_contact = Contact::new(
@@ -127,8 +106,6 @@ mod tests {
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully deleted contact"));
-
-        clean_database().await?;
 
         Ok(())
     }
@@ -184,8 +161,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_import_one_contact_when_importing_alice_csv() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
-
         let mut cmd = create_command();
         cmd.arg("import").arg("tests/fixtures/alice.csv");
 
@@ -193,7 +168,7 @@ mod tests {
             .success()
             .stdout(predicates::str::contains("Successfully imported 1 contact"));
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let pool = get_db_pool().await;
         let data_repo = Connection::new(pool);
 
         let contacts = data_repo.get_all_contacts().await?;
@@ -206,7 +181,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_import_example_csv_with_three_rows() -> anyhow::Result<()> {
-        clean_database().await?;
         let mut cmd = create_command();
         cmd.arg("import").arg("tests/fixtures/example.csv");
 
@@ -240,8 +214,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_say_no_contacts_when_contacts_are_empty() -> anyhow::Result<()> {
-        clean_database().await?;
-
         let mut cmd = create_command();
         cmd.arg("show");
 
@@ -254,9 +226,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_show_one_contact_when_one_contact_available() -> anyhow::Result<()> {
-        clean_database().await?;
-
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let pool = get_db_pool().await;
         let data_repo = Connection::new(pool);
 
         let example_contact = Contact::new(
@@ -291,9 +261,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
-
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let pool = get_db_pool().await;
         let data_repo = Connection::new(pool);
 
         let example_contact = Contact::new(
@@ -332,8 +300,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_accept_a_firstname_and_birthday() {
-        clean_database().await.unwrap();
-
         let mut cmd = create_command();
         cmd.arg("create")
             .arg("--first-name")
@@ -349,8 +315,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_set_birthday_when_provided() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
-
         let mut cmd = create_command();
         cmd.arg("create")
             .arg("--first-name")
@@ -362,7 +326,7 @@ mod tests {
             .success()
             .stdout(predicates::str::contains("Successfully saved contact"));
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let pool = get_db_pool().await;
         let data_repo = Connection::new(pool);
 
         let contact = data_repo.get_contact_by_id(1).await?.contact;
@@ -377,8 +341,6 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_allow_only_first_name_when_creating() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
-
         let mut cmd = create_command();
         cmd.arg("create").arg("--first-name").arg("Test");
 
