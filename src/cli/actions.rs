@@ -100,4 +100,13 @@ impl Actions {
 
         Ok(())
     }
+
+    pub async fn init_contact_book(&self) -> Result<(), anyhow::Error> {
+        // Check if the database exists and has been initialized
+        // For simplicity, we'll just check if we can connect to it
+        if self.data_repo.check_connection().await.is_ok() {
+            println!("A contact book has already been initalized");
+        }
+        Ok(())
+    }
 }

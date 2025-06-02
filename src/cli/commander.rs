@@ -9,6 +9,9 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Initalize a new contact book
+    Init,
+
     /// Create a contact
     Create(CreateCommand),
 

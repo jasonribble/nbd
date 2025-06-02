@@ -20,6 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
+        Commands::Init => actions.init_contact_book().await?,
         Commands::Create(value) => actions.create_contact(value).await?,
         Commands::Edit(value) => actions.edit_contact(value).await?,
         Commands::Show => actions.show_all_contacts().await?,

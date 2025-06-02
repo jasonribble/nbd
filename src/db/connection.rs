@@ -12,6 +12,12 @@ impl Connection {
             sqlite_pool: Arc::new(pool),
         }
     }
+
+    pub async fn check_connection(&self) -> anyhow::Result<()> {
+        // Execute a simple query to check if the connection works
+        sqlx::query("SELECT 1").execute(&*self.sqlite_pool).await?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]

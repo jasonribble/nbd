@@ -59,6 +59,7 @@ mod tests {
             "Usage: nbd-cli <COMMAND>",
             "",
             "Commands:",
+            "  init    Initalize a new contact book",
             "  create  Create a contact",
             "  edit    Edit a contact by ID",
             "  show    Get all contacts",
@@ -384,6 +385,21 @@ mod tests {
         cmd.assert()
             .success()
             .stdout(predicates::str::contains("Successfully saved contact"));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn should_say_already_initialized_when_db_exists() -> anyhow::Result<()> {
+        let _ = SqlitePool::connect("sqlite:contacts.db").await?;
+
+        let mut cmd = create_command();
+        cmd.arg("init");
+
+        cmd.assert().success().stdout(predicates::str::contains(
+            "A contact book has already been initalized",
+        ));
 
         Ok(())
     }
