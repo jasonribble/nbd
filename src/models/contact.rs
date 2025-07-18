@@ -94,10 +94,155 @@ pub struct Construct {
     pub id: i64,
     pub optional_contact: Optional,
 }
+
+#[derive(Debug, Default)]
+pub struct ConstructBuilder {
+    id: Option<i64>,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    email: Option<String>,
+    phone_number: Option<String>,
+    display_name: Option<String>,
+    birthday: Option<NaiveDate>,
+    starred: Option<bool>,
+    is_archived: Option<bool>,
+    last_seen_at: Option<DateTime<Utc>>,
+    next_reminder_at: Option<DateTime<Utc>>,
+    frequency: Option<String>,
+    last_reminder_at: Option<DateTime<Utc>>,
+}
+
+impl ConstructBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub const fn id(mut self, id: i64) -> Self {
+        self.id = Some(id);
+        self
+    }
+
+    pub fn first_name(mut self, first_name: String) -> Self {
+        self.first_name = Some(first_name);
+        self
+    }
+
+    pub fn last_name(mut self, last_name: String) -> Self {
+        self.last_name = Some(last_name);
+        self
+    }
+
+    pub fn email(mut self, email: String) -> Self {
+        self.email = Some(email);
+        self
+    }
+
+    pub fn phone_number(mut self, phone_number: String) -> Self {
+        self.phone_number = Some(phone_number);
+        self
+    }
+
+    pub fn display_name(mut self, display_name: String) -> Self {
+        self.display_name = Some(display_name);
+        self
+    }
+
+    pub const fn birthday(mut self, birthday: NaiveDate) -> Self {
+        self.birthday = Some(birthday);
+        self
+    }
+
+    pub const fn starred(mut self, starred: bool) -> Self {
+        self.starred = Some(starred);
+        self
+    }
+
+    pub const fn archived(mut self, is_archived: bool) -> Self {
+        self.is_archived = Some(is_archived);
+        self
+    }
+
+    pub const fn last_seen_at(mut self, last_seen_at: DateTime<Utc>) -> Self {
+        self.last_seen_at = Some(last_seen_at);
+        self
+    }
+
+    pub const fn next_reminder_at(mut self, next_reminder_at: DateTime<Utc>) -> Self {
+        self.next_reminder_at = Some(next_reminder_at);
+        self
+    }
+
+    pub fn frequency(mut self, frequency: String) -> Self {
+        self.frequency = Some(frequency);
+        self
+    }
+
+    pub const fn last_reminder_at(mut self, last_reminder_at: DateTime<Utc>) -> Self {
+        self.last_reminder_at = Some(last_reminder_at);
+        self
+    }
+
+    /// # Errors
+    ///
+    /// This errors if there is an invalid email or phone number, missing id, or all fields are empty
+    pub fn build(self) -> Result<Construct, AppError> {
+        let id = self.id.ok_or(AppError::EmptyUpdate)?;
+
+        let maybe_email = self.email.as_deref().unwrap_or("");
+        if utils::is_not_valid_email(maybe_email) && self.email.is_some() {
+            return Err(AppError::InvalidEmail(self.email.unwrap_or_default()));
+        }
+
+        let maybe_phone = self.phone_number.as_deref().unwrap_or("");
+        if utils::is_not_valid_phone_number(maybe_phone) && self.phone_number.is_some() {
+            return Err(AppError::InvalidPhoneNumber(
+                self.phone_number.unwrap_or_default(),
+            ));
+        }
+
+        let optional_contact = Optional {
+            first_name: self.first_name,
+            last_name: self.last_name,
+            display_name: self.display_name,
+            email: self.email,
+            phone_number: self.phone_number,
+            birthday: self.birthday,
+            starred: self.starred,
+            is_archived: self.is_archived,
+            last_seen_at: self.last_seen_at,
+            next_reminder_at: self.next_reminder_at,
+            frequency: self.frequency,
+            last_reminder_at: self.last_reminder_at,
+        };
+
+        if optional_contact.is_empty() {
+            return Err(AppError::EmptyUpdate);
+        }
+
+        Ok(Construct {
+            id,
+            optional_contact,
+        })
+    }
+}
+
 impl Construct {
+    #[must_use]
+    pub fn builder() -> ConstructBuilder {
+        ConstructBuilder::new()
+    }
+
     /// # Errors
     ///
     /// This errors if there is an invalid email or phone number
+    /// 
+    /// Creates a new contact with sensible defaults:
+    /// - `starred`: false
+    /// - `is_archived`: false
+    /// - `last_seen_at`: None
+    /// - `next_reminder_at`: None
+    /// - `frequency`: None
+    /// - `last_reminder_at`: None
     pub fn new(
         id: i64,
         first_name: Option<String>,
@@ -106,50 +251,29 @@ impl Construct {
         phone_number: Option<String>,
         display_name: Option<String>,
         birthday: Option<NaiveDate>,
-        starred: Option<bool>,
-        is_archived: Option<bool>,
-        last_seen_at: Option<DateTime<Utc>>,
-        next_reminder_at: Option<DateTime<Utc>>,
-        frequency: Option<String>,
-        last_reminder_at: Option<DateTime<Utc>>,
     ) -> Result<Self, AppError> {
-        let maybe_email = email.as_deref().unwrap_or("");
+        let mut builder = ConstructBuilder::new().id(id);
 
-        if utils::is_not_valid_email(maybe_email) && Option::is_some(&email) {
-            return Err(AppError::InvalidEmail(email.clone().unwrap_or_default()));
+        if let Some(first_name) = first_name {
+            builder = builder.first_name(first_name);
+        }
+        if let Some(last_name) = last_name {
+            builder = builder.last_name(last_name);
+        }
+        if let Some(email) = email {
+            builder = builder.email(email);
+        }
+        if let Some(phone_number) = phone_number {
+            builder = builder.phone_number(phone_number);
+        }
+        if let Some(display_name) = display_name {
+            builder = builder.display_name(display_name);
+        }
+        if let Some(birthday) = birthday {
+            builder = builder.birthday(birthday);
         }
 
-        let maybe_phone = phone_number.as_deref().unwrap_or("");
-
-        if utils::is_not_valid_phone_number(maybe_phone) && Option::is_some(&phone_number) {
-            return Err(AppError::InvalidPhoneNumber(
-                phone_number.clone().unwrap_or_default(),
-            ));
-        }
-
-        let optional_contact = Optional {
-            first_name,
-            last_name,
-            display_name,
-            email,
-            phone_number,
-            birthday,
-            starred,
-            is_archived,
-            last_seen_at,
-            next_reminder_at,
-            frequency,
-            last_reminder_at,
-        };
-
-        if optional_contact.is_empty() {
-            return Err(AppError::EmptyUpdate);
-        }
-
-        Ok(Self {
-            id,
-            optional_contact,
-        })
+        builder.build()
     }
 
     #[allow(dead_code)]
@@ -253,12 +377,6 @@ mod tests {
             Some("123-233-1221".to_string()),
             Some("Nickname".to_string()),
             None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
         )
         .unwrap();
 
@@ -286,12 +404,6 @@ mod tests {
             None,
             None,
             None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
         )
         .unwrap();
 
@@ -308,7 +420,7 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
-        let result = Construct::new(1, None, None, None, None, None, None, None, None, None, None, None, None);
+        let result = Construct::new(1, None, None, None, None, None, None);
         assert!(result.is_err());
     }
 
@@ -319,12 +431,6 @@ mod tests {
             None,
             None,
             Some("invalid@example".to_string()),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
             None,
             None,
             None,
@@ -341,12 +447,6 @@ mod tests {
             None,
             None,
             Some("123-123-12345".to_string()),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
             None,
             None,
         );

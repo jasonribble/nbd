@@ -42,12 +42,6 @@ impl Actions {
             command.phone_number.clone(),
             command.display_name.clone(),
             None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
         )
         .unwrap();
 

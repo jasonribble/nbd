@@ -27,13 +27,13 @@ mod tests {
     }
 
     fn create_lewis_carroll_contact() -> anyhow::Result<Contact> {
-        Contact::new(
+        Ok(Contact::new(
             "Lewis",
             "Carroll",
             "lewis@wonderland.com",
             "777-777-7777",
             "1832-1-27",
-        )
+        )?)
     }
 
     fn get_expected_table_header() -> Vec<&'static str> {
