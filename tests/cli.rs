@@ -30,10 +30,6 @@ mod tests {
             .execute(&pool)
             .await?;
 
-        sqlx::query!("DELETE FROM SQLITE_SEQUENCE WHERE name = 'contacts_metadata'")
-            .execute(&pool)
-            .await?;
-
         sqlx::query!("PRAGMA foreign_keys = ON")
             .execute(&pool)
             .await?;
