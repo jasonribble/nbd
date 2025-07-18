@@ -16,8 +16,13 @@ mod tests {
         cli_name.to_string()
     }
 
+    fn get_database_url() -> String {
+        std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:contacts.db".to_string())
+    }
+
     async fn clean_database() -> Result<(), sqlx::Error> {
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let pool = SqlitePool::connect(&database_url).await?;
 
         sqlx::query!("PRAGMA foreign_keys = OFF")
             .execute(&pool)
@@ -99,7 +104,8 @@ mod tests {
     async fn should_delete_a_contact_when_one_is_present() -> anyhow::Result<()> {
         clean_database().await.unwrap();
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let pool = SqlitePool::connect(&database_url).await?;
         let data_repo = Connection::new(pool);
 
         let example_contact = Contact::new(
@@ -186,7 +192,8 @@ mod tests {
             .success()
             .stdout(predicates::str::contains("Successfully imported 1 contact"));
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let pool = SqlitePool::connect(&database_url).await?;
         let data_repo = Connection::new(pool);
 
         let contacts = data_repo.get_all_contacts().await?;
@@ -249,7 +256,8 @@ mod tests {
     async fn should_show_one_contact_when_one_contact_available() -> anyhow::Result<()> {
         clean_database().await?;
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let pool = SqlitePool::connect(&database_url).await?;
         let data_repo = Connection::new(pool);
 
         let example_contact = Contact::new(
@@ -286,7 +294,8 @@ mod tests {
     async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
         clean_database().await.unwrap();
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let pool = SqlitePool::connect(&database_url).await?;
         let data_repo = Connection::new(pool);
 
         let example_contact = Contact::new(
@@ -355,7 +364,8 @@ mod tests {
             .success()
             .stdout(predicates::str::contains("Successfully saved contact"));
 
-        let pool = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let pool = SqlitePool::connect(&database_url).await?;
         let data_repo = Connection::new(pool);
 
         let contact = data_repo.get_contact_by_id(1).await?.contact;
@@ -385,7 +395,8 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_say_already_initialized_when_db_exists() -> anyhow::Result<()> {
-        let _ = SqlitePool::connect("sqlite:contacts.db").await?;
+        let database_url = get_database_url();
+        let _ = SqlitePool::connect(&database_url).await?;
 
         let mut cmd = create_command();
         cmd.arg("init");
