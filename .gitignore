@@ -3,4 +3,8 @@
 .env
 contacts.db-*
 
+
+CLAUDE.md
+.claude
+
 # Commit .sqlx/ files to enable builds without database connection
