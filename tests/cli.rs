@@ -27,13 +27,13 @@ mod tests {
     }
 
     fn create_lewis_carroll_contact() -> anyhow::Result<Contact> {
-        Ok(Contact::new(
-            "Lewis",
-            "Carroll",
-            "lewis@wonderland.com",
-            "777-777-7777",
-            "1832-1-27",
-        )?)
+        Ok(Contact::builder()
+            .first_name("Lewis")
+            .last_name("Carroll")
+            .email("lewis@wonderland.com")
+            .phone_number("777-777-7777")
+            .birthday("1832-1-27")
+            .build()?)
     }
 
     fn get_expected_table_header() -> Vec<&'static str> {
@@ -163,7 +163,7 @@ mod tests {
 
         cmd.assert()
             .failure()
-            .stderr(predicates::str::contains("InvalidEmail"));
+            .stderr(predicates::str::contains("test@.com is invalid"));
     }
 
     #[test]
@@ -181,7 +181,7 @@ mod tests {
 
         cmd.assert()
             .failure()
-            .stderr(predicates::str::contains("InvalidPhone"));
+            .stderr(predicates::str::contains("123-321-123 is invalid"));
     }
 
     #[test]

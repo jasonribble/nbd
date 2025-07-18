@@ -16,15 +16,13 @@ impl Actions {
     }
 
     pub async fn create_contact(&self, command: &CreateCommand) -> Result<(), anyhow::Error> {
-        let contact = models::Contact::new(
-            command.first_name.as_deref().unwrap_or(""),
-            command.last_name.as_deref().unwrap_or(""),
-            command.email.as_deref().unwrap_or(""),
-            command.phone_number.as_deref().unwrap_or(""),
-            command.birthday.as_deref().unwrap_or(""),
-        );
-
-        let contact = contact.unwrap();
+        let contact = models::Contact::builder()
+            .first_name(command.first_name.as_deref().unwrap_or(""))
+            .last_name(command.last_name.as_deref().unwrap_or(""))
+            .email(command.email.as_deref().unwrap_or(""))
+            .phone_number(command.phone_number.as_deref().unwrap_or(""))
+            .birthday(command.birthday.as_deref().unwrap_or(""))
+            .build()?;
 
         let id = self.data_repo.save_contact(contact).await?;
 

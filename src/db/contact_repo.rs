@@ -196,14 +196,14 @@ mod tests {
     async fn test_save_contact() {
         let mut mock_contact_repo = MockContactRepo::new();
 
-        let test_contact = models::Contact::new(
-            "John",
-            "Smith",
-            "johndoe@example.com",
-            "123-456-7890",
-            "1970-1-1",
-        )
-        .unwrap();
+        let test_contact = models::Contact::builder()
+            .first_name("John")
+            .last_name("Smith")
+            .email("johndoe@example.com")
+            .phone_number("123-456-7890")
+            .birthday("1970-1-1")
+            .build()
+            .unwrap();
 
         mock_contact_repo
             .expect_save_contact()

@@ -29,6 +29,121 @@ pub struct Contact {
     pub last_reminder_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Debug, Default)]
+pub struct ContactBuilder {
+    first_name: Option<String>,
+    last_name: Option<String>,
+    email: Option<String>,
+    phone_number: Option<String>,
+    birthday: Option<String>,
+}
+
+impl ContactBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn first_name(mut self, first_name: &str) -> Self {
+        self.first_name = Some(first_name.to_owned());
+        self
+    }
+
+    pub fn last_name(mut self, last_name: &str) -> Self {
+        self.last_name = Some(last_name.to_owned());
+        self
+    }
+
+    pub fn email(mut self, email: &str) -> Self {
+        self.email = Some(email.to_owned());
+        self
+    }
+
+    pub fn phone_number(mut self, phone_number: &str) -> Self {
+        self.phone_number = Some(phone_number.to_owned());
+        self
+    }
+
+    pub fn birthday(mut self, birthday: &str) -> Self {
+        self.birthday = Some(birthday.to_owned());
+        self
+    }
+
+    /// # Errors
+    ///
+    /// This errors if there is an invalid email, phone number, or birthday, or if required fields are missing
+    ///
+    /// # Panics
+    /// This will panic if `NaiveDate` fails
+    pub fn build(self) -> Result<Contact, AppError> {
+        let first_name = self.first_name.unwrap_or_default();
+        let last_name = self.last_name.unwrap_or_default();
+        let email = self.email.unwrap_or_default();
+        let phone_number = self.phone_number.unwrap_or_default();
+        let birthday = self.birthday.unwrap_or_default();
+
+        Contact::new(&first_name, &last_name, &email, &phone_number, &birthday)
+    }
+}
+
+impl Contact {
+    #[must_use]
+    pub fn builder() -> ContactBuilder {
+        ContactBuilder::new()
+    }
+
+    /// # Errors
+    ///
+    /// This errors if there is an invalid email, phone number, or birthday
+    ///
+    /// # Panics
+    /// This will panic if `NaiveDate` fails
+    pub fn new(
+        first_name: &str,
+        last_name: &str,
+        email: &str,
+        phone_number: &str,
+        birthday: &str,
+    ) -> Result<Self, AppError> {
+        let display_name = format!("{first_name} {last_name}");
+
+        if utils::is_not_valid_email(email) && !email.is_empty() {
+            return Err(AppError::InvalidEmail(email.to_owned()));
+        }
+
+        if utils::is_not_valid_phone_number(phone_number) && !phone_number.is_empty() {
+            return Err(AppError::InvalidPhoneNumber(phone_number.to_owned()));
+        }
+
+        let birthday = if birthday.trim().is_empty() {
+            NaiveDate::from_ymd_opt(0, 1, 1).unwrap()
+        } else {
+            let Ok(parsed_date) = NaiveDate::parse_from_str(birthday, "%Y-%m-%d") else {
+                return Err(AppError::InvalidBirthday(birthday.to_string()));
+            };
+            parsed_date
+        };
+
+        let now = Utc::now();
+
+        Ok(Self {
+            first_name: first_name.to_owned(),
+            last_name: last_name.to_owned(),
+            display_name,
+            email: email.to_owned(),
+            phone_number: phone_number.to_owned(),
+            birthday,
+            starred: false,
+            is_archived: false,
+            created_at: now,
+            updated_at: now,
+            last_seen_at: None,
+            next_reminder_at: None,
+            frequency: None,
+            last_reminder_at: None,
+        })
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
 pub struct Indexed {
     pub id: i64,
@@ -293,60 +408,6 @@ impl Construct {
     }
 }
 
-impl Contact {
-    /// # Errors
-    ///
-    /// This errors if there is an invalid email, phone number, or birthday
-    ///
-    /// # Panics
-    /// This will panic if `NaiveDate` fails
-    pub fn new(
-        first_name: &str,
-        last_name: &str,
-        email: &str,
-        phone_number: &str,
-        birthday: &str,
-    ) -> Result<Self, AppError> {
-        let display_name = format!("{first_name} {last_name}");
-
-        if utils::is_not_valid_email(email) && !email.is_empty() {
-            return Err(AppError::InvalidEmail(email.to_owned()));
-        }
-
-        if utils::is_not_valid_phone_number(phone_number) && !phone_number.is_empty() {
-            return Err(AppError::InvalidPhoneNumber(phone_number.to_owned()));
-        }
-
-        let birthday = if birthday.trim().is_empty() {
-            NaiveDate::from_ymd_opt(0, 1, 1).unwrap()
-        } else {
-            let Ok(parsed_date) = NaiveDate::parse_from_str(birthday, "%Y-%m-%d") else {
-                return Err(AppError::InvalidBirthday(birthday.to_string()));
-            };
-            parsed_date
-        };
-
-        let now = Utc::now();
-
-        Ok(Self {
-            first_name: first_name.to_owned(),
-            last_name: last_name.to_owned(),
-            display_name,
-            email: email.to_owned(),
-            phone_number: phone_number.to_owned(),
-            birthday,
-            starred: false,
-            is_archived: false,
-            created_at: now,
-            updated_at: now,
-            last_seen_at: None,
-            next_reminder_at: None,
-            frequency: None,
-            last_reminder_at: None,
-        })
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::utils::AppError;
@@ -365,6 +426,24 @@ mod tests {
         let display_name = "Jason Ribble".to_string();
 
         assert_eq!(person.unwrap().display_name, display_name)
+    }
+
+    #[test]
+    fn test_contact_builder() {
+        let person = Contact::builder()
+            .first_name("Alice")
+            .last_name("Lovelace")
+            .email("ada@lovelace.com")
+            .phone_number("123-321-1233")
+            .birthday("1970-01-01")
+            .build();
+
+        let contact = person.unwrap();
+        assert_eq!(contact.first_name, "Alice");
+        assert_eq!(contact.last_name, "Lovelace");
+        assert_eq!(contact.display_name, "Alice Lovelace");
+        assert_eq!(contact.email, "ada@lovelace.com");
+        assert_eq!(contact.phone_number, "123-321-1233");
     }
 
     #[test]
@@ -415,6 +494,30 @@ mod tests {
             Some("new@email.com".to_string())
         );
         assert_eq!(edits.optional_contact.phone_number, None);
+        assert_eq!(edits.optional_contact.display_name, None);
+    }
+
+    #[test]
+    fn test_construct_builder() {
+        let edits = Construct::builder()
+            .id(3)
+            .first_name("John".to_string())
+            .email("john@example.com".to_string())
+            .phone_number("555-012-3456".to_string())
+            .build()
+            .unwrap();
+
+        assert_eq!(edits.id, 3);
+        assert_eq!(edits.optional_contact.first_name, Some("John".to_string()));
+        assert_eq!(
+            edits.optional_contact.email,
+            Some("john@example.com".to_string())
+        );
+        assert_eq!(
+            edits.optional_contact.phone_number,
+            Some("555-012-3456".to_string())
+        );
+        assert_eq!(edits.optional_contact.last_name, None);
         assert_eq!(edits.optional_contact.display_name, None);
     }
 

@@ -16,7 +16,7 @@ impl fmt::Display for AppError {
             Self::InvalidEmail(email) => write!(f, "{email} is invalid."),
             Self::InvalidPhoneNumber(phone) => write!(f, "{phone} is invalid."),
             Self::EmptyUpdate => write!(f, "Empty update"),
-            Self::InvalidBirthday(birthday) => write!(f, "{birthday} is invalid"),
+            Self::InvalidBirthday(birthday) => write!(f, "InvalidBirthday: {birthday} is invalid"),
         }
     }
 }
