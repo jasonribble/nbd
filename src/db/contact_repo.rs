@@ -224,14 +224,14 @@ mod tests {
 
         let contacts = vec![models::IndexedContact {
             id: 1,
-            contact: models::Contact::new(
-                "John",
-                "Doe",
-                "johndoe@example.com",
-                "1234567890",
-                "1970-01-01",
-            )
-            .unwrap(),
+            contact: models::Contact::builder()
+                .first_name("John")
+                .last_name("Doe")
+                .email("johndoe@example.com")
+                .phone_number("1234567890")
+                .birthday("1970-01-01")
+                .build()
+                .unwrap(),
         }];
 
         mock_contact_repo
@@ -275,14 +275,14 @@ mod tests {
 
         let contact = models::IndexedContact {
             id: 1,
-            contact: models::Contact::new(
-                "John",
-                "Doe",
-                "johndoe@example.com",
-                "1234567890",
-                "1970-01-01",
-            )
-            .unwrap(),
+            contact: models::Contact::builder()
+                .first_name("John")
+                .last_name("Doe")
+                .email("johndoe@example.com")
+                .phone_number("1234567890")
+                .birthday("1970-01-01")
+                .build()
+                .unwrap(),
         };
 
         mock_contact_repo

@@ -75,14 +75,14 @@ mod tests {
 
         let data_repo = Connection::new(pool);
 
-        let example_contact = Contact::new(
-            "Lewis",
-            "Carroll",
-            "lewis@wonderland.com",
-            "777-777-7777",
-            "1832-1-27",
-        )
-        .unwrap();
+        let example_contact = Contact::builder()
+            .first_name("Lewis")
+            .last_name("Carroll")
+            .email("lewis@wonderland.com")
+            .phone_number("777-777-7777")
+            .birthday("1832-1-27")
+            .build()
+            .unwrap();
 
         let result_contact_id = data_repo.save_contact(example_contact.clone()).await;
 
