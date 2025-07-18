@@ -1,6 +1,6 @@
 use crate::utils;
 use crate::utils::AppError;
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 use tabled::Tabled;
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
@@ -11,6 +11,22 @@ pub struct Contact {
     pub email: String,
     pub phone_number: String,
     pub birthday: NaiveDate,
+    #[tabled(skip)]
+    pub starred: bool,
+    #[tabled(skip)]
+    pub is_archived: bool,
+    #[tabled(skip)]
+    pub created_at: DateTime<Utc>,
+    #[tabled(skip)]
+    pub updated_at: DateTime<Utc>,
+    #[tabled(skip)]
+    pub last_seen_at: Option<DateTime<Utc>>,
+    #[tabled(skip)]
+    pub next_reminder_at: Option<DateTime<Utc>>,
+    #[tabled(skip)]
+    pub frequency: Option<String>,
+    #[tabled(skip)]
+    pub last_reminder_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, sqlx::FromRow, Tabled)]
@@ -29,6 +45,12 @@ pub struct Optional {
     pub email: Option<String>,
     pub phone_number: Option<String>,
     pub birthday: Option<NaiveDate>,
+    pub starred: Option<bool>,
+    pub is_archived: Option<bool>,
+    pub last_seen_at: Option<DateTime<Utc>>,
+    pub next_reminder_at: Option<DateTime<Utc>>,
+    pub frequency: Option<String>,
+    pub last_reminder_at: Option<DateTime<Utc>>,
 }
 
 impl Optional {
@@ -39,6 +61,13 @@ impl Optional {
             && self.display_name.is_none()
             && self.email.is_none()
             && self.phone_number.is_none()
+            && self.birthday.is_none()
+            && self.starred.is_none()
+            && self.is_archived.is_none()
+            && self.last_seen_at.is_none()
+            && self.next_reminder_at.is_none()
+            && self.frequency.is_none()
+            && self.last_reminder_at.is_none()
     }
 
     #[must_use]
@@ -50,6 +79,12 @@ impl Optional {
             email: None,
             phone_number: None,
             birthday: None,
+            starred: None,
+            is_archived: None,
+            last_seen_at: None,
+            next_reminder_at: None,
+            frequency: None,
+            last_reminder_at: None,
         }
     }
 }
@@ -71,6 +106,12 @@ impl Construct {
         phone_number: Option<String>,
         display_name: Option<String>,
         birthday: Option<NaiveDate>,
+        starred: Option<bool>,
+        is_archived: Option<bool>,
+        last_seen_at: Option<DateTime<Utc>>,
+        next_reminder_at: Option<DateTime<Utc>>,
+        frequency: Option<String>,
+        last_reminder_at: Option<DateTime<Utc>>,
     ) -> Result<Self, AppError> {
         let maybe_email = email.as_deref().unwrap_or("");
 
@@ -93,6 +134,12 @@ impl Construct {
             email,
             phone_number,
             birthday,
+            starred,
+            is_archived,
+            last_seen_at,
+            next_reminder_at,
+            frequency,
+            last_reminder_at,
         };
 
         if optional_contact.is_empty() {
@@ -112,6 +159,13 @@ impl Construct {
             && self.optional_contact.display_name.is_none()
             && self.optional_contact.email.is_none()
             && self.optional_contact.phone_number.is_none()
+            && self.optional_contact.birthday.is_none()
+            && self.optional_contact.starred.is_none()
+            && self.optional_contact.is_archived.is_none()
+            && self.optional_contact.last_seen_at.is_none()
+            && self.optional_contact.next_reminder_at.is_none()
+            && self.optional_contact.frequency.is_none()
+            && self.optional_contact.last_reminder_at.is_none()
     }
 }
 
@@ -148,6 +202,8 @@ impl Contact {
             parsed_date
         };
 
+        let now = Utc::now();
+
         Ok(Self {
             first_name: first_name.to_owned(),
             last_name: last_name.to_owned(),
@@ -155,6 +211,14 @@ impl Contact {
             email: email.to_owned(),
             phone_number: phone_number.to_owned(),
             birthday,
+            starred: false,
+            is_archived: false,
+            created_at: now,
+            updated_at: now,
+            last_seen_at: None,
+            next_reminder_at: None,
+            frequency: None,
+            last_reminder_at: None,
         })
     }
 }
@@ -189,6 +253,12 @@ mod tests {
             Some("123-233-1221".to_string()),
             Some("Nickname".to_string()),
             None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
         .unwrap();
 
@@ -216,6 +286,12 @@ mod tests {
             None,
             None,
             None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
         .unwrap();
 
@@ -232,7 +308,7 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
-        let result = Construct::new(1, None, None, None, None, None, None);
+        let result = Construct::new(1, None, None, None, None, None, None, None, None, None, None, None, None);
         assert!(result.is_err());
     }
 
@@ -243,6 +319,12 @@ mod tests {
             None,
             None,
             Some("invalid@example".to_string()),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             None,
             None,
             None,
@@ -259,6 +341,12 @@ mod tests {
             None,
             None,
             Some("123-123-12345".to_string()),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             None,
             None,
         );

@@ -1,7 +1,7 @@
 use crate::{models, utils};
 use async_trait::async_trait;
 
-use super::{connection::Connection, MetadataRepo};
+use super::connection::Connection;
 
 #[cfg_attr(test, mockall::automock)]
 #[async_trait]
@@ -19,8 +19,8 @@ pub trait ContactRepo {
 impl ContactRepo for Connection {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
-        (first_name, last_name, display_name, email, phone_number, birthday)
-        VALUES (?, ?, ?, ?, ?, ?)";
+        (first_name, last_name, display_name, email, phone_number, birthday, starred, is_archived, created_at, updated_at, last_seen_at, next_reminder_at, frequency, last_reminder_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         let result = sqlx::query(query)
             .bind(&contact.first_name)
             .bind(&contact.last_name)
@@ -28,12 +28,18 @@ impl ContactRepo for Connection {
             .bind(&contact.email)
             .bind(&contact.phone_number)
             .bind(contact.birthday)
+            .bind(contact.starred)
+            .bind(contact.is_archived)
+            .bind(contact.created_at)
+            .bind(contact.updated_at)
+            .bind(contact.last_seen_at)
+            .bind(contact.next_reminder_at)
+            .bind(&contact.frequency)
+            .bind(contact.last_reminder_at)
             .execute(&*self.sqlite_pool)
             .await?;
 
         let contact_id = result.last_insert_rowid();
-
-        self.create_metadata(contact_id).await?;
 
         Ok(contact_id)
     }
@@ -52,6 +58,10 @@ impl ContactRepo for Connection {
     }
 
     async fn update_contact(&self, contact: models::ContactBuilder) -> anyhow::Result<()> {
+        use chrono::Utc;
+        
+        let now = Utc::now();
+        
         sqlx::query!(
             r#"
             UPDATE contacts
@@ -60,14 +70,30 @@ impl ContactRepo for Connection {
                 last_name = COALESCE($2, last_name),
                 display_name = COALESCE($3, display_name),
                 email = COALESCE($4, email),
-                phone_number = COALESCE($5, phone_number)
-            WHERE id = $6
+                phone_number = COALESCE($5, phone_number),
+                birthday = COALESCE($6, birthday),
+                starred = COALESCE($7, starred),
+                is_archived = COALESCE($8, is_archived),
+                updated_at = $9,
+                last_seen_at = COALESCE($10, last_seen_at),
+                next_reminder_at = COALESCE($11, next_reminder_at),
+                frequency = COALESCE($12, frequency),
+                last_reminder_at = COALESCE($13, last_reminder_at)
+            WHERE id = $14
             "#,
             contact.optional_contact.first_name,
             contact.optional_contact.last_name,
             contact.optional_contact.display_name,
             contact.optional_contact.email,
             contact.optional_contact.phone_number,
+            contact.optional_contact.birthday,
+            contact.optional_contact.starred,
+            contact.optional_contact.is_archived,
+            now,
+            contact.optional_contact.last_seen_at,
+            contact.optional_contact.next_reminder_at,
+            contact.optional_contact.frequency,
+            contact.optional_contact.last_reminder_at,
             contact.id
         )
         .execute(&*self.sqlite_pool)
@@ -102,6 +128,8 @@ impl ContactRepo for Connection {
     }
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
+        use chrono::Utc;
+        
         let mut display_name = contact.display_name.clone();
 
         if display_name.is_none() {
@@ -115,11 +143,13 @@ impl ContactRepo for Connection {
         }
 
         let query =
-            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email, birthday) VALUES (?, ?, ?, ?, ?, ?)";
+            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email, birthday, starred, is_archived, created_at, updated_at, last_seen_at, next_reminder_at, frequency, last_reminder_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         let birthday = contact
             .birthday
             .unwrap_or(chrono::NaiveDate::from_ymd_opt(1, 1, 1).unwrap());
+
+        let now = Utc::now();
 
         let result = sqlx::query(query)
             .bind(&contact.first_name)
@@ -128,12 +158,18 @@ impl ContactRepo for Connection {
             .bind(&contact.phone_number)
             .bind(&contact.email)
             .bind(birthday)
+            .bind(contact.starred.unwrap_or(false))
+            .bind(contact.is_archived.unwrap_or(false))
+            .bind(now)
+            .bind(now)
+            .bind(contact.last_seen_at)
+            .bind(contact.next_reminder_at)
+            .bind(&contact.frequency)
+            .bind(contact.last_reminder_at)
             .execute(&*self.sqlite_pool)
             .await?;
 
         let contact_id = result.last_insert_rowid();
-
-        self.create_metadata(contact_id).await?;
 
         Ok(contact_id)
     }
@@ -225,6 +261,12 @@ mod tests {
             None,
             None,
             None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
         .unwrap();
 
@@ -296,6 +338,12 @@ mod tests {
             email: Some("ada@lovelace.rs".to_string()),
             phone_number: Some("1233211233".to_string()),
             birthday: Some(chrono::NaiveDate::default()),
+            starred: None,
+            is_archived: None,
+            last_seen_at: None,
+            next_reminder_at: None,
+            frequency: None,
+            last_reminder_at: None,
         };
 
         let contact_id = data_repo
@@ -436,13 +484,10 @@ mod tests {
 
         let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
 
-        let result_expected_metadata = data_repo
-            .get_metadata_by_id(number_of_imported_contacts)
-            .await;
-
-        let expected_metadata = result_expected_metadata.unwrap();
-
-        assert_eq!(number_of_imported_contacts, expected_metadata.contact_id);
+        let contacts = data_repo.get_all_contacts().await?;
+        let last_contact = contacts.last().unwrap();
+        
+        assert_eq!(number_of_imported_contacts, last_contact.id);
 
         Ok(())
     }

@@ -38,9 +38,15 @@ impl Actions {
             command.id,
             command.first_name.clone(),
             command.last_name.clone(),
-            command.display_name.clone(),
             command.email.clone(),
             command.phone_number.clone(),
+            command.display_name.clone(),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             None,
         )
         .unwrap();

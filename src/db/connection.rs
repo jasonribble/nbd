@@ -26,13 +26,13 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use crate::{
-        db::{Connection, ContactRepo, MetadataRepo},
+        db::{Connection, ContactRepo},
         models::{Contact, OptionalContact},
         test_helpers::setup_in_memory_db,
     };
 
     #[tokio::test]
-    async fn test_save_contact_get_metadata() {
+    async fn test_save_contact() {
         let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
@@ -49,15 +49,11 @@ mod tests {
         let result_contact_id = data_repo.save_contact(example_contact).await;
         let contact_id = result_contact_id.unwrap();
 
-        let result_expected_metadata = data_repo.get_metadata_by_id(contact_id).await;
-
-        let expected_metadata = result_expected_metadata.unwrap();
-
-        assert_eq!(contact_id, expected_metadata.contact_id);
+        assert_eq!(contact_id, 1);
     }
 
     #[tokio::test]
-    async fn test_save_optional_contact_get_metadata() {
+    async fn test_save_optional_contact() {
         let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
@@ -70,15 +66,11 @@ mod tests {
         let result_contact_id = data_repo.save_optional_contact(example_contact).await;
         let contact_id = result_contact_id.unwrap();
 
-        let result_expected_metadata = data_repo.get_metadata_by_id(contact_id).await;
-
-        let expected_metadata = result_expected_metadata.unwrap();
-
-        assert_eq!(contact_id, expected_metadata.contact_id);
+        assert_eq!(contact_id, 1);
     }
 
     #[tokio::test]
-    async fn test_delete_contact_deletes_metadata() {
+    async fn test_delete_contact() {
         let pool = setup_in_memory_db().await;
 
         let data_repo = Connection::new(pool);
@@ -106,8 +98,6 @@ mod tests {
 
         let deleted_contact_id = data_repo.delete_contact_by_id(contact_id).await.unwrap();
 
-        let failed_contact_metadata = data_repo.get_metadata_by_id(deleted_contact_id).await;
-
-        assert!(failed_contact_metadata.is_err());
+        assert_eq!(deleted_contact_id, 1);
     }
 }

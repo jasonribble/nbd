@@ -23,9 +23,6 @@ mod tests {
             .execute(&pool)
             .await?;
 
-        sqlx::query!("DELETE FROM contacts_metadata")
-            .execute(&pool)
-            .await?;
 
         sqlx::query!("DELETE FROM contacts").execute(&pool).await?;
 
