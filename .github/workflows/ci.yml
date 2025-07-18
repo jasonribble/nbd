@@ -50,6 +50,8 @@ jobs:
 
       - name: Check sqlx queries are up to date
         run: cargo sqlx prepare --check -- --all-targets --all-features
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Run CLI tests
         run: cargo test --test cli
