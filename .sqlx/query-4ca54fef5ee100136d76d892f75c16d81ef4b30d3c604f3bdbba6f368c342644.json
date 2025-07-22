@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE contacts\n            SET\n                first_name = COALESCE($1, first_name),\n                last_name = COALESCE($2, last_name),\n                display_name = COALESCE($3, display_name),\n                email = COALESCE($4, email),\n                phone_number = COALESCE($5, phone_number),\n                birthday = COALESCE($6, birthday),\n                starred = COALESCE($7, starred),\n                is_archived = COALESCE($8, is_archived),\n                updated_at = $9,\n                last_seen_at = COALESCE($10, last_seen_at),\n                frequency = COALESCE($11, frequency),\n                last_reminder_at = COALESCE($12, last_reminder_at)\n            WHERE id = $13\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 13
+    },
+    "nullable": []
+  },
+  "hash": "4ca54fef5ee100136d76d892f75c16d81ef4b30d3c604f3bdbba6f368c342644"
+}
