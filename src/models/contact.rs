@@ -22,8 +22,6 @@ pub struct Contact {
     #[tabled(skip)]
     pub last_seen_at: Option<DateTime<Utc>>,
     #[tabled(skip)]
-    pub next_reminder_at: Option<DateTime<Utc>>,
-    #[tabled(skip)]
     pub frequency: Option<String>,
     #[tabled(skip)]
     pub last_reminder_at: Option<DateTime<Utc>>,
@@ -137,7 +135,6 @@ impl Contact {
             created_at: now,
             updated_at: now,
             last_seen_at: None,
-            next_reminder_at: None,
             frequency: None,
             last_reminder_at: None,
         })
@@ -163,7 +160,6 @@ pub struct Optional {
     pub starred: Option<bool>,
     pub is_archived: Option<bool>,
     pub last_seen_at: Option<DateTime<Utc>>,
-    pub next_reminder_at: Option<DateTime<Utc>>,
     pub frequency: Option<String>,
     pub last_reminder_at: Option<DateTime<Utc>>,
 }
@@ -180,7 +176,6 @@ impl Optional {
             && self.starred.is_none()
             && self.is_archived.is_none()
             && self.last_seen_at.is_none()
-            && self.next_reminder_at.is_none()
             && self.frequency.is_none()
             && self.last_reminder_at.is_none()
     }
@@ -197,7 +192,6 @@ impl Optional {
             starred: None,
             is_archived: None,
             last_seen_at: None,
-            next_reminder_at: None,
             frequency: None,
             last_reminder_at: None,
         }
@@ -222,7 +216,6 @@ pub struct ConstructBuilder {
     starred: Option<bool>,
     is_archived: Option<bool>,
     last_seen_at: Option<DateTime<Utc>>,
-    next_reminder_at: Option<DateTime<Utc>>,
     frequency: Option<String>,
     last_reminder_at: Option<DateTime<Utc>>,
 }
@@ -282,10 +275,6 @@ impl ConstructBuilder {
         self
     }
 
-    pub const fn next_reminder_at(mut self, next_reminder_at: DateTime<Utc>) -> Self {
-        self.next_reminder_at = Some(next_reminder_at);
-        self
-    }
 
     pub fn frequency(mut self, frequency: String) -> Self {
         self.frequency = Some(frequency);
@@ -325,7 +314,6 @@ impl ConstructBuilder {
             starred: self.starred,
             is_archived: self.is_archived,
             last_seen_at: self.last_seen_at,
-            next_reminder_at: self.next_reminder_at,
             frequency: self.frequency,
             last_reminder_at: self.last_reminder_at,
         };
@@ -402,7 +390,6 @@ impl Construct {
             && self.optional_contact.starred.is_none()
             && self.optional_contact.is_archived.is_none()
             && self.optional_contact.last_seen_at.is_none()
-            && self.optional_contact.next_reminder_at.is_none()
             && self.optional_contact.frequency.is_none()
             && self.optional_contact.last_reminder_at.is_none()
     }

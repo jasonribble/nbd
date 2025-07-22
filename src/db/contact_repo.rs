@@ -19,8 +19,8 @@ pub trait ContactRepo {
 impl ContactRepo for Connection {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
-        (first_name, last_name, display_name, email, phone_number, birthday, starred, is_archived, created_at, updated_at, last_seen_at, next_reminder_at, frequency, last_reminder_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        (first_name, last_name, display_name, email, phone_number, birthday, starred, is_archived, created_at, updated_at, last_seen_at, frequency, last_reminder_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         let result = sqlx::query(query)
             .bind(&contact.first_name)
             .bind(&contact.last_name)
@@ -33,7 +33,6 @@ impl ContactRepo for Connection {
             .bind(contact.created_at)
             .bind(contact.updated_at)
             .bind(contact.last_seen_at)
-            .bind(contact.next_reminder_at)
             .bind(&contact.frequency)
             .bind(contact.last_reminder_at)
             .execute(&*self.sqlite_pool)
@@ -76,10 +75,9 @@ impl ContactRepo for Connection {
                 is_archived = COALESCE($8, is_archived),
                 updated_at = $9,
                 last_seen_at = COALESCE($10, last_seen_at),
-                next_reminder_at = COALESCE($11, next_reminder_at),
-                frequency = COALESCE($12, frequency),
-                last_reminder_at = COALESCE($13, last_reminder_at)
-            WHERE id = $14
+                frequency = COALESCE($11, frequency),
+                last_reminder_at = COALESCE($12, last_reminder_at)
+            WHERE id = $13
             "#,
             contact.optional_contact.first_name,
             contact.optional_contact.last_name,
@@ -91,7 +89,6 @@ impl ContactRepo for Connection {
             contact.optional_contact.is_archived,
             now,
             contact.optional_contact.last_seen_at,
-            contact.optional_contact.next_reminder_at,
             contact.optional_contact.frequency,
             contact.optional_contact.last_reminder_at,
             contact.id
@@ -143,7 +140,7 @@ impl ContactRepo for Connection {
         }
 
         let query =
-            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email, birthday, starred, is_archived, created_at, updated_at, last_seen_at, next_reminder_at, frequency, last_reminder_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email, birthday, starred, is_archived, created_at, updated_at, last_seen_at, frequency, last_reminder_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         let birthday = contact
             .birthday
@@ -163,7 +160,6 @@ impl ContactRepo for Connection {
             .bind(now)
             .bind(now)
             .bind(contact.last_seen_at)
-            .bind(contact.next_reminder_at)
             .bind(&contact.frequency)
             .bind(contact.last_reminder_at)
             .execute(&*self.sqlite_pool)
@@ -335,7 +331,6 @@ mod tests {
             starred: None,
             is_archived: None,
             last_seen_at: None,
-            next_reminder_at: None,
             frequency: None,
             last_reminder_at: None,
         };
