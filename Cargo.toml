@@ -41,3 +41,13 @@ path = "src/cli/main.rs"
 [lib]
 name = "nbd"
 path = "src/lib.rs"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+# come at me, clippy
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+unwrap_used = "deny"
