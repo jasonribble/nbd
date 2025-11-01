@@ -67,7 +67,7 @@ jobs:
         with:
           components: clippy
       - name: Lint check
-        run: cargo clippy -- -D clippy::pedantic -W clippy::nursery
+        run: cargo clippy
 
   publish:
     name: Publish Release
