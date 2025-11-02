@@ -7,13 +7,13 @@ mod tests {
     use sqlx::SqlitePool;
 
     fn create_command() -> Command {
-        Command::cargo_bin(get_cli_name()).unwrap()
+        Command::cargo_bin(get_cli_name()).expect("Command `nbd` is located")
     }
 
     fn get_cli_name() -> String {
         let package_name = env!("CARGO_PKG_NAME");
-        let cli_name = format!("{}-cli", package_name);
-        cli_name.to_string()
+        let cli_name = format!("{package_name}-cli");
+        cli_name
     }
 
     fn get_database_url() -> String {
@@ -53,7 +53,6 @@ mod tests {
         sqlx::query!("PRAGMA foreign_keys = OFF")
             .execute(&pool)
             .await?;
-
 
         sqlx::query!("DELETE FROM contacts").execute(&pool).await?;
 
@@ -105,7 +104,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_be_able_to_create_full_contact() {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
         cmd.arg("create")
@@ -128,12 +127,12 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_delete_a_contact_when_one_is_present() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let data_repo = create_repo().await?;
-        let example_contact = create_lewis_carroll_contact().unwrap();
+        let example_contact = create_lewis_carroll_contact()?;
 
-        data_repo.save_contact(example_contact).await.unwrap();
+        data_repo.save_contact(example_contact).await?;
 
         let mut cmd = create_command();
         let contact_id = "1";
@@ -199,7 +198,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_import_one_contact_when_importing_alice_csv() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
         cmd.arg("import").arg("tests/fixtures/alice.csv");
@@ -271,9 +270,9 @@ mod tests {
         clean_database().await?;
 
         let data_repo = create_repo().await?;
-        let example_contact = create_lewis_carroll_contact().unwrap();
+        let example_contact = create_lewis_carroll_contact()?;
 
-        data_repo.save_contact(example_contact).await.unwrap();
+        data_repo.save_contact(example_contact).await?;
 
         let mut cmd = create_command();
 
@@ -290,16 +289,13 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let data_repo = create_repo().await?;
-        let example_contact = create_lewis_carroll_contact().unwrap();
+        let example_contact = create_lewis_carroll_contact()?;
 
-        data_repo
-            .save_contact(example_contact.clone())
-            .await
-            .unwrap();
-        data_repo.save_contact(example_contact).await.unwrap();
+        data_repo.save_contact(example_contact.clone()).await?;
+        data_repo.save_contact(example_contact).await?;
 
         let mut cmd = create_command();
 
@@ -316,7 +312,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_accept_a_firstname_and_birthday() {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
         cmd.arg("create")
@@ -333,7 +329,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_set_birthday_when_provided() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
         cmd.arg("create")
@@ -350,7 +346,8 @@ mod tests {
 
         let contact = data_repo.get_contact_by_id(1).await?.contact;
 
-        let birthday = chrono::NaiveDate::from_ymd_opt(2024, 6, 6).unwrap();
+        let birthday =
+            chrono::NaiveDate::from_ymd_opt(2024, 6, 6).expect("Should be June, 6, 2024");
 
         assert_eq!(contact.birthday, birthday);
 
@@ -360,7 +357,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_allow_only_first_name_when_creating() -> anyhow::Result<()> {
-        clean_database().await.unwrap();
+        clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
         cmd.arg("create").arg("--first-name").arg("Test");

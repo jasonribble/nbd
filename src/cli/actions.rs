@@ -41,7 +41,7 @@ impl Actions {
             command.display_name.clone(),
             None,
         )
-        .unwrap();
+        .expect("Expect editable contact");
 
         let _ = self.data_repo.update_contact(contact).await;
 

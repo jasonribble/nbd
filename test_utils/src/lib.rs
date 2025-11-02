@@ -1,5 +1,5 @@
 use anyhow::Ok;
-use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
+use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use std::fs;
 
 pub async fn setup_in_memory_db() -> SqlitePool {

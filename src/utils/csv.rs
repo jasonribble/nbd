@@ -87,15 +87,16 @@ mod tests {
 
     #[test]
     fn should_accept_valid_csv_file() {
-        let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
-        writeln!(temp_csv, "first_name\nAlice").unwrap();
+        let mut temp_csv = NamedTempFile::with_suffix(".csv").expect("Temp CSV");
+        writeln!(temp_csv, "first_name\nAlice").expect("Write mock csv");
 
-        let temp_csv = temp_csv.path().to_str().unwrap();
+        let temp_csv = temp_csv.path().to_str().expect("The path to the CSV");
         let result = process_csv_to_contacts(temp_csv);
 
         assert!(result.is_ok());
     }
 
+    #[allow(clippy::unwrap_used)]
     #[test]
     fn should_return_error_when_file_not_found() {
         let non_existent_file_path = "non_existent.csv";
@@ -109,6 +110,7 @@ mod tests {
         );
     }
 
+    #[allow(clippy::unwrap_used)]
     #[test]
     fn should_error_if_file_is_empty() {
         let temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
@@ -120,12 +122,13 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), "CSV file is empty");
     }
 
+    #[allow(clippy::unwrap_used)]
     #[test]
     fn should_error_if_invalid_csv_format() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
         let malformed_csv = "first_name,phone_number,email\nAlice,1234567890";
-        write!(temp_csv, "{}", malformed_csv).unwrap();
+        write!(temp_csv, "{malformed_csv}").unwrap();
 
         let temp_csv = temp_csv.path().to_str().unwrap();
         let result = process_csv_to_contacts(temp_csv);
@@ -136,12 +139,13 @@ mod tests {
         }
     }
 
+    #[allow(clippy::unwrap_used)]
     #[test]
     fn should_error_when_given_an_invalid_phone_number() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
         let malformed_csv = "first_name,phone_number\nAlice,not_a_phone_number";
-        write!(temp_csv, "{}", malformed_csv).unwrap();
+        write!(temp_csv, "{malformed_csv}").unwrap();
 
         let temp_csv = temp_csv.path().to_str().unwrap();
         let result = process_csv_to_contacts(temp_csv);
@@ -150,12 +154,13 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), "Invalid Phone Number");
     }
 
+    #[allow(clippy::unwrap_used)]
     #[test]
     fn should_error_when_given_an_invalid_email() {
         let mut temp_csv = NamedTempFile::with_suffix(".csv").unwrap();
 
         let malformed_email_csv = "first_name,email\nAlice,invalid@email";
-        write!(temp_csv, "{}", malformed_email_csv).unwrap();
+        write!(temp_csv, "{malformed_email_csv}").unwrap();
 
         let temp_csv_path = temp_csv.path().to_str().unwrap();
 
@@ -165,13 +170,14 @@ mod tests {
         assert_eq!(contacts.unwrap_err().to_string(), "Invalid Email");
     }
 
+    #[allow(clippy::unwrap_used)]
     #[test]
     fn should_read_csv_with_multiple_rows() -> anyhow::Result<()> {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
         let three_contacts =
             "first_name,phone_number\nAlice,1234567890\nBob,0989878721\nCharlie,1989878721";
 
-        writeln!(temp_csv, "{}", three_contacts)?;
+        writeln!(temp_csv, "{three_contacts}")?;
 
         let temp_csv = temp_csv.path().to_str().unwrap();
         let result = process_csv_to_contacts(temp_csv)?;
@@ -186,12 +192,12 @@ mod tests {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
         let alice_firstname_and_phone = "first_name,phone_number\nAlice,1234567890";
 
-        writeln!(temp_csv, "{}", alice_firstname_and_phone)?;
+        writeln!(temp_csv, "{alice_firstname_and_phone}")?;
 
         let temp_csv = temp_csv.path();
         let contacts = csv_to_contacts(temp_csv);
 
-        let alice = &contacts.unwrap()[0];
+        let alice = &contacts.expect("At least one contact")[0];
         let expected_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
             phone_number: Some("1234567890".to_string()),
@@ -209,10 +215,10 @@ mod tests {
         let three_contacts =
             "first_name,phone_number\nAlice,1234567890\nBob,0989878721\nCharlie,1989878721";
 
-        writeln!(temp_csv, "{}", three_contacts)?;
+        writeln!(temp_csv, "{three_contacts}")?;
 
         let temp_csv = temp_csv.path();
-        let contacts = csv_to_contacts(temp_csv).unwrap();
+        let contacts = csv_to_contacts(temp_csv)?;
 
         let expected_contacts = vec![
             OptionalContact {
@@ -245,12 +251,12 @@ mod tests {
         let mut temp_csv = NamedTempFile::with_suffix(".csv")?;
         let first_name_iso8601_birthday = "first_name,birthday\nAlice,1987-07-11T00:00:00Z";
 
-        writeln!(temp_csv, "{}", first_name_iso8601_birthday)?;
+        writeln!(temp_csv, "{first_name_iso8601_birthday}")?;
 
-        let temp_csv = temp_csv.path().to_str().unwrap();
+        let temp_csv = temp_csv.path().to_str().expect("Path to csv");
         let result = process_csv_to_contacts(temp_csv);
 
-        println!("{:?}", result);
+        println!("{result:?}");
 
         assert!(result.is_ok());
 

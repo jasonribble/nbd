@@ -113,7 +113,7 @@ impl Contact {
         }
 
         let birthday = if birthday.trim().is_empty() {
-            NaiveDate::from_ymd_opt(0, 1, 1).unwrap()
+            NaiveDate::from_ymd_opt(0, 1, 1).expect("Expected default date")
         } else {
             let Ok(parsed_date) = NaiveDate::parse_from_str(birthday, "%Y-%m-%d") else {
                 return Err(AppError::InvalidBirthday(birthday.to_string()));
@@ -275,7 +275,6 @@ impl ConstructBuilder {
         self
     }
 
-
     pub fn frequency(mut self, frequency: String) -> Self {
         self.frequency = Some(frequency);
         self
@@ -338,7 +337,7 @@ impl Construct {
     /// # Errors
     ///
     /// This errors if there is an invalid email or phone number
-    /// 
+    ///
     /// Creates a new contact with sensible defaults:
     /// - `starred`: false
     /// - `is_archived`: false
@@ -409,23 +408,24 @@ mod tests {
             "john@example.com",
             "123-456-7890",
             "1970-01-01",
-        );
+        )
+        .expect("Example person");
         let display_name = "Jason Ribble".to_string();
 
-        assert_eq!(person.unwrap().display_name, display_name)
+        assert_eq!(person.display_name, display_name);
     }
 
     #[test]
     fn test_contact_builder() {
-        let person = Contact::builder()
+        let contact = Contact::builder()
             .first_name("Alice")
             .last_name("Lovelace")
             .email("ada@lovelace.com")
             .phone_number("123-321-1233")
             .birthday("1970-01-01")
-            .build();
+            .build()
+            .expect("Example contact");
 
-        let contact = person.unwrap();
         assert_eq!(contact.first_name, "Alice");
         assert_eq!(contact.last_name, "Lovelace");
         assert_eq!(contact.display_name, "Alice Lovelace");
@@ -444,7 +444,7 @@ mod tests {
             Some("Nickname".to_string()),
             None,
         )
-        .unwrap();
+        .expect("Example edit");
 
         assert_eq!(edits.id, 1);
         assert_eq!(
@@ -471,7 +471,7 @@ mod tests {
             None,
             None,
         )
-        .unwrap();
+        .expect("Contact build");
 
         assert_eq!(edits.id, 2);
         assert_eq!(edits.optional_contact.first_name, Some("Mary".to_string()));
@@ -492,7 +492,7 @@ mod tests {
             .email("john@example.com".to_string())
             .phone_number("555-012-3456".to_string())
             .build()
-            .unwrap();
+            .expect("Contact build");
 
         assert_eq!(edits.id, 3);
         assert_eq!(edits.optional_contact.first_name, Some("John".to_string()));
@@ -558,9 +558,9 @@ mod tests {
             "123-321-1233",
             "1970-01-01",
         )
-        .unwrap();
+        .expect("Contact build");
 
-        let expect_birthday = chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap();
+        let expect_birthday = chrono::NaiveDate::from_ymd_opt(1970, 1, 1).expect("Contact build");
 
         assert_eq!(result.birthday, expect_birthday);
     }

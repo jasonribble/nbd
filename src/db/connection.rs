@@ -44,10 +44,10 @@ mod tests {
             .phone_number("777-777-7777")
             .birthday("1832-1-27")
             .build()
-            .unwrap();
+            .expect("Expect Louis Carroll");
 
         let result_contact_id = data_repo.save_contact(example_contact).await;
-        let contact_id = result_contact_id.unwrap();
+        let contact_id = result_contact_id.expect("Valid Contact");
 
         assert_eq!(contact_id, 1);
     }
@@ -64,7 +64,7 @@ mod tests {
         };
 
         let result_contact_id = data_repo.save_optional_contact(example_contact).await;
-        let contact_id = result_contact_id.unwrap();
+        let contact_id = result_contact_id.expect("Valid Contact ID");
 
         assert_eq!(contact_id, 1);
     }
@@ -82,21 +82,26 @@ mod tests {
             .phone_number("777-777-7777")
             .birthday("1832-1-27")
             .build()
-            .unwrap();
+            .expect("Louis Carroll");
 
         let result_contact_id = data_repo.save_contact(example_contact.clone()).await;
 
-        let contact_id = result_contact_id.unwrap();
+        let contact_id = result_contact_id.expect("Valid ID");
 
-        let contact_from_database = data_repo.get_contact_by_id(contact_id).await;
-        let contact_from_database = contact_from_database.unwrap();
+        let contact_from_database = data_repo
+            .get_contact_by_id(contact_id)
+            .await
+            .expect("Contact from database");
 
         assert_eq!(
             contact_from_database.contact.first_name,
             example_contact.first_name
         );
 
-        let deleted_contact_id = data_repo.delete_contact_by_id(contact_id).await.unwrap();
+        let deleted_contact_id = data_repo
+            .delete_contact_by_id(contact_id)
+            .await
+            .expect("Deleted from database");
 
         assert_eq!(deleted_contact_id, 1);
     }

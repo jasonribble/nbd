@@ -3,7 +3,7 @@ use regex::Regex;
 fn is_valid_phone_number(phone: &str) -> bool {
     let phone_pattern =
         r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$";
-    let phone_regex = Regex::new(phone_pattern).unwrap();
+    let phone_regex = Regex::new(phone_pattern).expect("Phone pattern");
     phone_regex.is_match(phone)
 }
 
@@ -14,7 +14,7 @@ pub fn is_not_valid_phone_number(phone_number: &str) -> bool {
 
 fn is_valid_email(email: &str) -> bool {
     let email_pattern = r"^[\w\d][-\w\d+.]*@((?:[-\w\d]+\.)+[-\w\d]{2,})$";
-    let email_regex = regex::Regex::new(email_pattern).unwrap();
+    let email_regex = regex::Regex::new(email_pattern).expect("Email pattern");
     email_regex.is_match(email)
 }
 
@@ -46,8 +46,7 @@ mod tests {
         for number in &valid_numbers {
             assert!(
                 is_valid_phone_number(number),
-                "Valid number '{}' failed validation",
-                number
+                "Valid number '{number}' failed validation",
             );
         }
     }
@@ -68,8 +67,7 @@ mod tests {
         for number in &invalid_numbers {
             assert!(
                 is_not_valid_phone_number(number),
-                "Invalid number '{}' passed validation",
-                number
+                "Invalid number '{number}' passed validation",
             );
         }
     }
@@ -88,9 +86,8 @@ mod tests {
         for valid_email in valid_emails {
             assert!(
                 is_valid_email(valid_email),
-                "Valid email '{}' passed validation",
-                valid_email
-            )
+                "Valid email '{valid_email}' passed validation"
+            );
         }
     }
 
@@ -114,9 +111,8 @@ mod tests {
         for invalid_email in invalid_emails {
             assert!(
                 is_not_valid_email(invalid_email),
-                "Invalid email '{}' passed validation",
-                invalid_email
-            )
+                "Invalid email '{invalid_email}' passed validation",
+            );
         }
     }
 }

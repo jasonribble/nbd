@@ -1,4 +1,7 @@
-use crate::{models, utils};
+use crate::{
+    models,
+    utils::{self, default_date},
+};
 use async_trait::async_trait;
 
 use super::connection::Connection;
@@ -58,9 +61,7 @@ impl ContactRepo for Connection {
 
     async fn update_contact(&self, contact: models::ContactBuilder) -> anyhow::Result<()> {
         use chrono::Utc;
-        
         let now = Utc::now();
-        
         sqlx::query!(
             r#"
             UPDATE contacts
@@ -126,7 +127,7 @@ impl ContactRepo for Connection {
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
         use chrono::Utc;
-        
+
         let mut display_name = contact.display_name.clone();
 
         if display_name.is_none() {
@@ -142,9 +143,8 @@ impl ContactRepo for Connection {
         let query =
             "INSERT INTO contacts (first_name, last_name, display_name, phone_number, email, birthday, starred, is_archived, created_at, updated_at, last_seen_at, frequency, last_reminder_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        let birthday = contact
-            .birthday
-            .unwrap_or(chrono::NaiveDate::from_ymd_opt(1, 1, 1).unwrap());
+        let default_date = default_date();
+        let birthday = contact.birthday.unwrap_or(default_date);
 
         let now = Utc::now();
 
@@ -199,7 +199,7 @@ mod tests {
             .phone_number("123-456-7890")
             .birthday("1970-1-1")
             .build()
-            .unwrap();
+            .expect("Test contact");
 
         mock_contact_repo
             .expect_save_contact()
@@ -207,9 +207,10 @@ mod tests {
             .with(eq(test_contact.clone()))
             .returning(|_| Ok(1));
 
-        let result = mock_contact_repo.save_contact(test_contact).await;
-
-        let result = result.unwrap();
+        let result = mock_contact_repo
+            .save_contact(test_contact)
+            .await
+            .expect("Saved contact");
 
         assert_eq!(result, 1);
     }
@@ -227,7 +228,7 @@ mod tests {
                 .phone_number("1234567890")
                 .birthday("1970-01-01")
                 .build()
-                .unwrap(),
+                .expect("Test contact"),
         }];
 
         mock_contact_repo
@@ -258,7 +259,7 @@ mod tests {
             None,
             None,
         )
-        .unwrap();
+        .expect("Contact with only an email");
 
         let result = mock_contact_repo.update_contact(edits).await;
 
@@ -278,7 +279,7 @@ mod tests {
                 .phone_number("1234567890")
                 .birthday("1970-01-01")
                 .build()
-                .unwrap(),
+                .expect("Default contact"),
         };
 
         mock_contact_repo
@@ -291,7 +292,7 @@ mod tests {
 
         assert!(result.is_ok());
 
-        let actual_contact = result.unwrap();
+        let actual_contact = result.expect("Actual Contact");
 
         assert_eq!(actual_contact.id, 1);
     }
@@ -343,18 +344,27 @@ mod tests {
 
         let saved_contact = saved_contact.contact;
 
-        assert_eq!(saved_contact.first_name, test_contact.first_name.unwrap());
-        assert_eq!(saved_contact.last_name, test_contact.last_name.unwrap());
+        assert_eq!(
+            saved_contact.first_name,
+            test_contact.first_name.expect("Contact first name")
+        );
+        assert_eq!(
+            saved_contact.last_name,
+            test_contact.last_name.expect("Contact last name")
+        );
         assert_eq!(
             saved_contact.phone_number,
-            test_contact.phone_number.unwrap()
+            test_contact.phone_number.expect("Contact phone number")
         );
 
-        assert_eq!(saved_contact.email, test_contact.email.unwrap());
+        assert_eq!(
+            saved_contact.email,
+            test_contact.email.expect("Contact emails")
+        );
 
         assert_eq!(
             saved_contact.display_name,
-            test_contact.display_name.unwrap()
+            test_contact.display_name.expect("Display name")
         );
 
         Ok(())
@@ -437,9 +447,9 @@ mod tests {
 
         let example_csv = "tests/fixtures/alice.csv";
 
-        let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
+        let number_of_imported_contacts = Ok(data_repo.import_contacts_by_csv(example_csv).await?);
 
-        let number_of_contacts = data_repo.get_all_contacts().await?.len() as i64;
+        let number_of_contacts = i64::try_from(data_repo.get_all_contacts().await?.len());
 
         assert_eq!(number_of_contacts, number_of_imported_contacts);
 
@@ -454,9 +464,9 @@ mod tests {
 
         let example_csv = "tests/fixtures/example.csv";
 
-        let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
+        let number_of_imported_contacts = Ok(data_repo.import_contacts_by_csv(example_csv).await?);
 
-        let number_of_contacts = data_repo.get_all_contacts().await?.len() as i64;
+        let number_of_contacts = i64::try_from(data_repo.get_all_contacts().await?.len());
 
         assert_eq!(number_of_contacts, number_of_imported_contacts);
 
@@ -474,8 +484,7 @@ mod tests {
         let number_of_imported_contacts = data_repo.import_contacts_by_csv(example_csv).await?;
 
         let contacts = data_repo.get_all_contacts().await?;
-        let last_contact = contacts.last().unwrap();
-        
+        let last_contact = contacts.last().expect("Contact has a last item");
         assert_eq!(number_of_imported_contacts, last_contact.id);
 
         Ok(())
@@ -497,7 +506,7 @@ mod tests {
 
         assert_eq!(
             aldous_huxley_birthday,
-            chrono::NaiveDate::from_ymd_opt(1894, 07, 26).unwrap()
+            chrono::NaiveDate::from_ymd_opt(1894, 7, 26).expect("Aldous's Birthday")
         );
 
         Ok(())
@@ -519,14 +528,14 @@ mod tests {
 
         assert_eq!(
             aldous_huxley_birthday,
-            chrono::NaiveDate::from_ymd_opt(1894, 07, 26).unwrap()
+            chrono::NaiveDate::from_ymd_opt(1894, 7, 26).expect("Valid date")
         );
 
         let cs_lewis_birthday = contacts[2].contact.birthday;
 
         assert_eq!(
             cs_lewis_birthday,
-            chrono::NaiveDate::from_ymd_opt(1898, 11, 29).unwrap()
+            chrono::NaiveDate::from_ymd_opt(1898, 11, 29).expect("Valid date")
         );
 
         Ok(())

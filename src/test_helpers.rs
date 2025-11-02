@@ -5,6 +5,8 @@ use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 #[cfg(test)]
 use std::fs;
 
+/// # Panics
+/// If the in-memory database fails, it will panic
 #[cfg(test)]
 pub async fn setup_in_memory_db() -> SqlitePool {
     let pool = SqlitePoolOptions::new()
@@ -12,15 +14,15 @@ pub async fn setup_in_memory_db() -> SqlitePool {
         .await
         .expect("Failed to create in-memory SQLite database");
 
-    let migrations_entries = get_migration_entries().unwrap();
+    let migrations_entries = get_migration_entries().expect("Failed to get migration");
 
-    for migration_entry in migrations_entries.into_iter() {
+    for migration_entry in migrations_entries {
         let migration_file_path = String::from(migration_entry.to_string_lossy());
 
         let migration = fs::read_to_string(migration_file_path.clone())
             .expect("Should have been able to read the file");
 
-        let error = format!("Failed to insert {}", migration_file_path);
+        let error = format!("Failed to insert {migration_file_path}");
 
         sqlx::query(&migration).execute(&pool).await.expect(&error);
     }
@@ -47,8 +49,8 @@ mod tests {
     fn current_number_of_migrations() {
         let migrations = 6;
 
-        let entries = get_migration_entries().unwrap();
+        let entries = get_migration_entries().expect("Failed to get migration");
 
-        assert_eq!(migrations, entries.len())
+        assert_eq!(migrations, entries.len());
     }
 }
