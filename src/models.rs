@@ -1,5 +1,4 @@
 mod contact;
-mod profile;
 
 pub use contact::Construct as ContactBuilder;
 pub use contact::Contact;
