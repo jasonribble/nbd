@@ -2,7 +2,7 @@
 mod tests {
     use assert_cmd::Command;
     use nbd::db::ContactRepo;
-    use nbd::{db::Connection, models::Contact};
+    use nbd::{db::Repo, models::Contact};
     use serial_test::serial;
     use sqlx::SqlitePool;
 
@@ -20,10 +20,10 @@ mod tests {
         std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:contacts.db".to_string())
     }
 
-    async fn create_repo() -> anyhow::Result<Connection> {
+    async fn create_repo() -> anyhow::Result<Repo> {
         let database_url = get_database_url();
         let pool = SqlitePool::connect(&database_url).await?;
-        Ok(Connection::new(pool))
+        Ok(Repo::new(pool))
     }
 
     fn create_lewis_carroll_contact() -> anyhow::Result<Contact> {

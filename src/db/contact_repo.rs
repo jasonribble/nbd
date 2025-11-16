@@ -4,7 +4,7 @@ use crate::{
 };
 use async_trait::async_trait;
 
-use super::connection::Connection;
+use super::connection::Repo;
 
 #[cfg_attr(test, mockall::automock)]
 #[async_trait]
@@ -19,7 +19,7 @@ pub trait ContactRepo {
 }
 
 #[async_trait]
-impl ContactRepo for Connection {
+impl ContactRepo for Repo {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
         (first_name, last_name, display_name, email, phone_number, birthday, starred, is_archived, created_at, updated_at, last_seen_at, frequency, last_reminder_at)
@@ -301,7 +301,7 @@ mod tests {
     async fn should_save_option_contact_in_database() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let test_contact = models::OptionalContact {
             first_name: Some("Jason".to_string()),
@@ -320,7 +320,7 @@ mod tests {
     {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let test_contact = models::OptionalContact {
             first_name: Some("Ada".to_string()),
@@ -374,7 +374,7 @@ mod tests {
     async fn should_default_to_first_and_last_name_for_display_name() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let test_contact = models::OptionalContact {
             first_name: Some("Ada".to_string()),
@@ -416,7 +416,7 @@ mod tests {
     async fn should_save_two_option_contact_in_database() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let test_contact = models::OptionalContact {
             first_name: Some("Jason".to_string()),
@@ -443,7 +443,7 @@ mod tests {
     async fn should_store_one_contact_when_given_alice_csv() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_csv = "tests/fixtures/alice.csv";
 
@@ -460,7 +460,7 @@ mod tests {
     async fn should_store_three_contacts_when_given_example() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_csv = "tests/fixtures/example.csv";
 
@@ -477,7 +477,7 @@ mod tests {
     async fn should_create_metadata_when_importing_csv() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_csv = "tests/fixtures/example.csv";
 
@@ -494,7 +494,7 @@ mod tests {
     async fn should_save_csv_with_one_row_and_birthday() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_csv = "tests/fixtures/birthday.csv";
 
@@ -516,7 +516,7 @@ mod tests {
     async fn should_save_csv_with_threes_row_and_birthday() -> anyhow::Result<()> {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_csv = "tests/fixtures/three_birthdays.csv";
 

@@ -6,7 +6,7 @@ mod commander;
 use actions::Actions;
 use clap::Parser;
 use commander::{Cli, Commands};
-use nbd::db::Connection;
+use nbd::db::Repo;
 use sqlx::SqlitePool;
 
 #[tokio::main]
@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
     let pool = SqlitePool::connect(&env::var("DATABASE_URL")?).await?;
-    let data_repo = Connection::new(pool);
+    let data_repo = Repo::new(pool);
     let actions = Actions::new(data_repo);
 
     let cli = Cli::parse();

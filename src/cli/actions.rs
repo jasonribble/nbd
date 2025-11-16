@@ -1,5 +1,5 @@
 use nbd::{
-    db::{self, Connection, ContactRepo},
+    db::{self, Repo, ContactRepo},
     models::{self, ContactBuilder},
 };
 use tabled::Table;
@@ -7,11 +7,11 @@ use tabled::Table;
 use crate::commander::{CreateCommand, DeleteCommand, EditCommand, GetCommand, ImportCommand};
 
 pub struct Actions {
-    data_repo: db::Connection,
+    data_repo: db::Repo,
 }
 
 impl Actions {
-    pub const fn new(data_repo: Connection) -> Self {
+    pub const fn new(data_repo: Repo) -> Self {
         Self { data_repo }
     }
 

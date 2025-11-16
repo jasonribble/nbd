@@ -1,11 +1,11 @@
 use sqlx::SqlitePool;
 use std::sync::Arc;
 
-pub struct Connection {
+pub struct Repo {
     pub sqlite_pool: Arc<SqlitePool>,
 }
 
-impl Connection {
+impl Repo {
     #[must_use]
     pub fn new(pool: SqlitePool) -> Self {
         Self {
@@ -26,7 +26,7 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use crate::{
-        db::{Connection, ContactRepo},
+        db::{Repo, ContactRepo},
         models::{Contact, OptionalContact},
         test_helpers::setup_in_memory_db,
     };
@@ -35,7 +35,7 @@ mod tests {
     async fn test_save_contact() {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_contact = Contact::builder()
             .first_name("Lewis")
@@ -56,7 +56,7 @@ mod tests {
     async fn test_save_optional_contact() {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
@@ -73,7 +73,7 @@ mod tests {
     async fn test_delete_contact() {
         let pool = setup_in_memory_db().await;
 
-        let data_repo = Connection::new(pool);
+        let data_repo = Repo::new(pool);
 
         let example_contact = Contact::builder()
             .first_name("Lewis")
