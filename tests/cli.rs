@@ -23,7 +23,7 @@ mod tests {
         std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:contacts.db".to_string())
     }
 
-    async fn create_repo() -> anyhow::Result<Repo> {
+    async fn create_repo() -> anyhow::Result<Repo<SqlitePool>> {
         let database_url = get_database_url();
         let pool = SqlitePool::connect(&database_url).await?;
         Ok(Repo::new(pool))
@@ -382,7 +382,7 @@ mod tests {
         cmd.arg("init");
 
         cmd.assert().success().stdout(predicates::str::contains(
-            "A contact book has already been initalized",
+            "A contact book has already been initialized",
         ));
 
         Ok(())

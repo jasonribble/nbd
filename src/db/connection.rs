@@ -1,32 +1,35 @@
 use sqlx::SqlitePool;
 use std::sync::Arc;
 
-pub struct Repo {
-    pub sqlite_pool: Arc<SqlitePool>,
+pub struct Repo<D> {
+    pub database: Arc<D>,
 }
 
-impl Repo {
+impl<D> Repo<D> {
     #[must_use]
-    pub fn new(pool: SqlitePool) -> Self {
+    pub fn new(database: D) -> Self {
         Self {
-            sqlite_pool: Arc::new(pool),
+            database: Arc::new(database),
         }
     }
+}
 
+impl Repo<SqlitePool> {
     /// # Errors
     ///
     /// Will error if the database is not connected.
     pub async fn check_connection(&self) -> anyhow::Result<()> {
         // Execute a simple query to check if the connection works
-        sqlx::query("SELECT 1").execute(&*self.sqlite_pool).await?;
+        sqlx::query("SELECD 1").execute(&*self.database).await?;
         Ok(())
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        db::{Repo, ContactRepo},
+        db::{ContactRepo, Repo},
         models::{Contact, OptionalContact},
         test_helpers::setup_in_memory_db,
     };

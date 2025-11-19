@@ -2,16 +2,17 @@ use nbd::{
     db::{self, Repo, ContactRepo},
     models::{self, ContactBuilder},
 };
+use sqlx::{SqlitePool};
 use tabled::Table;
 
 use crate::commander::{CreateCommand, DeleteCommand, EditCommand, GetCommand, ImportCommand};
 
 pub struct Actions {
-    data_repo: db::Repo,
+    data_repo: db::Repo<SqlitePool>,
 }
 
 impl Actions {
-    pub const fn new(data_repo: Repo) -> Self {
+    pub const fn new(data_repo: Repo<SqlitePool>) -> Self {
         Self { data_repo }
     }
 

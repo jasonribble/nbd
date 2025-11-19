@@ -3,6 +3,7 @@ use crate::{
     utils::{self, default_date},
 };
 use async_trait::async_trait;
+use sqlx::SqlitePool;
 
 use super::connection::Repo;
 
@@ -19,7 +20,7 @@ pub trait ContactRepo {
 }
 
 #[async_trait]
-impl ContactRepo for Repo {
+impl ContactRepo for Repo<SqlitePool> {
     async fn save_contact(&self, contact: models::Contact) -> anyhow::Result<i64> {
         let query = "INSERT INTO contacts
         (first_name, last_name, display_name, email, phone_number, birthday, starred, is_archived, created_at, updated_at, last_seen_at, frequency, last_reminder_at)
@@ -38,7 +39,7 @@ impl ContactRepo for Repo {
             .bind(contact.last_seen_at)
             .bind(&contact.frequency)
             .bind(contact.last_reminder_at)
-            .execute(&*self.sqlite_pool)
+            .execute(&*self.database)
             .await?;
 
         let contact_id = result.last_insert_rowid();
@@ -53,7 +54,7 @@ impl ContactRepo for Repo {
 
         let contacts_with_id: Vec<models::IndexedContact> =
             sqlx::query_as::<_, models::IndexedContact>(get_contacts_query)
-                .fetch_all(&*self.sqlite_pool)
+                .fetch_all(&*self.database)
                 .await?;
 
         Ok(contacts_with_id)
@@ -94,7 +95,7 @@ impl ContactRepo for Repo {
             contact.optional_contact.last_reminder_at,
             contact.id
         )
-        .execute(&*self.sqlite_pool)
+        .execute(&*self.database)
         .await?;
 
         println!("Contact updated");
@@ -108,7 +109,7 @@ impl ContactRepo for Repo {
         let contact: models::IndexedContact =
             sqlx::query_as::<_, models::IndexedContact>(query_get_by_id)
                 .bind(id)
-                .fetch_one(&*self.sqlite_pool)
+                .fetch_one(&*self.database)
                 .await?;
 
         Ok(contact)
@@ -119,7 +120,7 @@ impl ContactRepo for Repo {
 
         let contact_id = sqlx::query(query_delete_by_id)
             .bind(id)
-            .execute(&*self.sqlite_pool)
+            .execute(&*self.database)
             .await?;
 
         Ok(contact_id.last_insert_rowid())
@@ -162,7 +163,7 @@ impl ContactRepo for Repo {
             .bind(contact.last_seen_at)
             .bind(&contact.frequency)
             .bind(contact.last_reminder_at)
-            .execute(&*self.sqlite_pool)
+            .execute(&*self.database)
             .await?;
 
         let contact_id = result.last_insert_rowid();
