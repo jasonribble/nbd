@@ -20,7 +20,7 @@ impl Repo<SqlitePool> {
     /// Will error if the database is not connected.
     pub async fn check_connection(&self) -> anyhow::Result<()> {
         // Execute a simple query to check if the connection works
-        sqlx::query("SELECD 1").execute(&*self.database).await?;
+        sqlx::query("SELECT 1").execute(&*self.database).await?;
         Ok(())
     }
 }
