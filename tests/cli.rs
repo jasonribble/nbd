@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests {
+    use assert_cmd::Command;
     use nbd::{
         db::{ContactRepo, Repo},
         models::Contact,
         utils::DatabaseError,
     };
-    use assert_cmd::Command;
     use serial_test::serial;
     use sqlx::SqlitePool;
 
@@ -85,7 +85,7 @@ mod tests {
             "Usage: nbd-cli <COMMAND>",
             "",
             "Commands:",
-            "  init    Initalize a new contact book",
+            "  init    Initialize a new contact book",
             "  create  Create a contact",
             "  edit    Edit a contact by ID",
             "  show    Get all contacts",

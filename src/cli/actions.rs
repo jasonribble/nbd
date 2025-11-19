@@ -1,8 +1,8 @@
 use nbd::{
-    db::{self, Repo, ContactRepo},
+    db::{self, ContactRepo, Repo},
     models::{self, ContactBuilder},
 };
-use sqlx::{SqlitePool};
+use sqlx::SqlitePool;
 use tabled::Table;
 
 use crate::commander::{CreateCommand, DeleteCommand, EditCommand, GetCommand, ImportCommand};
@@ -104,7 +104,7 @@ impl Actions {
         // Check if the database exists and has been initialized
         // For simplicity, we'll just check if we can connect to it
         if self.data_repo.check_connection().await.is_ok() {
-            println!("A contact book has already been initalized");
+            println!("A contact book has already been initialized");
         }
         Ok(())
     }

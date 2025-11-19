@@ -25,7 +25,6 @@ impl Repo<SqlitePool> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::{
