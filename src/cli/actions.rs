@@ -46,6 +46,8 @@ impl Actions {
 
         let _ = self.data_repo.update_contact(contact).await;
 
+        println!("Contact updated");
+
         Ok(())
     }
 

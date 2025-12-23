@@ -98,8 +98,6 @@ impl ContactRepo for Repo<SqlitePool> {
         .execute(&*self.database)
         .await?;
 
-        println!("Contact updated");
-
         Ok(())
     }
 
