@@ -239,8 +239,8 @@ mod tests {
         cmd.arg("import").arg("tests/fixtures/example.txt");
 
         cmd.assert()
-            .success()
-            .stdout(predicates::str::contains("File must have .csv extension"));
+            .failure()
+            .stderr(predicates::str::contains("File must have .csv extension"));
     }
 
     #[test]
@@ -249,8 +249,8 @@ mod tests {
         cmd.arg("import").arg("tests/fixtures/blank.csv");
 
         cmd.assert()
-            .success()
-            .stdout(predicates::str::contains("CSV file is empty"));
+            .failure()
+            .stderr(predicates::str::contains("CSV file is empty"));
     }
 
     #[tokio::test]

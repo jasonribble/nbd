@@ -41,10 +41,9 @@ impl Actions {
             command.phone_number.clone(),
             command.display_name.clone(),
             None,
-        )
-        .expect("Expect editable contact");
+        )?;
 
-        let _ = self.data_repo.update_contact(contact).await;
+        self.data_repo.update_contact(contact).await?;
 
         println!("Contact updated");
 
@@ -85,19 +84,12 @@ impl Actions {
     }
 
     pub async fn import_contacts(&self, command: &ImportCommand) -> Result<(), anyhow::Error> {
-        let result_of_import = self
+        let number_of_imports = self
             .data_repo
-            .import_contacts_by_csv(command.filename.as_str())
-            .await;
+            .import_contacts_by_csv(&command.filename)
+            .await?;
 
-        match result_of_import {
-            Ok(number_of_imports) => {
-                println!("Successfully imported {number_of_imports} contact");
-            }
-            Err(error) => {
-                println!("{error}");
-            }
-        }
+        println!("Successfully imported {number_of_imports} contact");
 
         Ok(())
     }
