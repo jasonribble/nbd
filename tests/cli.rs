@@ -150,6 +150,21 @@ mod tests {
         Ok(())
     }
 
+    #[tokio::test]
+    #[serial]
+    async fn should_show_error_when_deleting_nonexistent_contact() -> anyhow::Result<()> {
+        clean_database().await.expect("Failed to clean database");
+
+        let mut cmd = create_command();
+        cmd.arg("delete").arg("999");
+
+        cmd.assert()
+            .failure()
+            .stderr(predicates::str::contains("That Contact ID does not exist"));
+
+        Ok(())
+    }
+
     #[test]
     fn should_error_when_providing_invalid_email() {
         let mut cmd = create_command();

@@ -114,14 +114,18 @@ impl ContactRepo for Repo<SqlitePool> {
     }
 
     async fn delete_contact_by_id(&self, id: i64) -> anyhow::Result<i64> {
-        let query_delete_by_id = "DELETE FROM contacts WHERE id=$1 RETURNING id";
+        let query_delete_by_id = "DELETE FROM contacts WHERE id=$1";
 
-        let contact_id = sqlx::query(query_delete_by_id)
+        let result = sqlx::query(query_delete_by_id)
             .bind(id)
             .execute(&*self.database)
             .await?;
 
-        Ok(contact_id.last_insert_rowid())
+        if result.rows_affected() == 0 {
+            anyhow::bail!("That Contact ID does not exist")
+        }
+
+        Ok(id)
     }
 
     async fn save_optional_contact(&self, contact: models::OptionalContact) -> anyhow::Result<i64> {
@@ -538,5 +542,16 @@ mod tests {
         );
 
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn should_return_error_when_deleting_nonexistent_id() {
+        let pool = setup_in_memory_db().await;
+        let data_repo = Repo::new(pool);
+
+        let nonexistent_id = 999;
+        let result = data_repo.delete_contact_by_id(nonexistent_id).await;
+
+        assert!(result.is_err());
     }
 }
