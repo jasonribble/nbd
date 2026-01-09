@@ -62,7 +62,7 @@ mod tests {
 
         let example_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
-            ..OptionalContact::template()
+            ..OptionalContact::default()
         };
 
         let result_contact_id = data_repo.save_optional_contact(example_contact).await;

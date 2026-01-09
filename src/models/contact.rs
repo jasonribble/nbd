@@ -149,7 +149,7 @@ pub struct Indexed {
     pub contact: Contact,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, serde::Deserialize)]
 pub struct Optional {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
@@ -178,23 +178,6 @@ impl Optional {
             && self.last_seen_at.is_none()
             && self.frequency.is_none()
             && self.last_reminder_at.is_none()
-    }
-
-    #[must_use]
-    pub const fn template() -> Self {
-        Self {
-            first_name: None,
-            last_name: None,
-            display_name: None,
-            email: None,
-            phone_number: None,
-            birthday: None,
-            starred: None,
-            is_archived: None,
-            last_seen_at: None,
-            frequency: None,
-            last_reminder_at: None,
-        }
     }
 }
 

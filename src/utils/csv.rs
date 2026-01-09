@@ -201,7 +201,7 @@ mod tests {
         let expected_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
             phone_number: Some("1234567890".to_string()),
-            ..OptionalContact::template()
+            ..OptionalContact::default()
         };
 
         assert_eq!(alice, &expected_contact);
@@ -224,17 +224,17 @@ mod tests {
             OptionalContact {
                 first_name: Some("Alice".to_string()),
                 phone_number: Some("1234567890".to_string()),
-                ..OptionalContact::template()
+                ..OptionalContact::default()
             },
             OptionalContact {
                 first_name: Some("Bob".to_string()),
                 phone_number: Some("0989878721".to_string()),
-                ..OptionalContact::template()
+                ..OptionalContact::default()
             },
             OptionalContact {
                 first_name: Some("Charlie".to_string()),
                 phone_number: Some("1989878721".to_string()),
-                ..OptionalContact::template()
+                ..OptionalContact::default()
             },
         ];
 

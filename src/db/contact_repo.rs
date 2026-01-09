@@ -304,7 +304,7 @@ mod tests {
 
         let test_contact = models::OptionalContact {
             first_name: Some("Jason".to_string()),
-            ..models::OptionalContact::template()
+            ..models::OptionalContact::default()
         };
 
         let result = data_repo.save_optional_contact(test_contact).await?;
@@ -379,7 +379,7 @@ mod tests {
             first_name: Some("Ada".to_string()),
             last_name: Some("Lovelace".to_string()),
             birthday: Some(chrono::NaiveDate::default()),
-            ..models::OptionalContact::template()
+            ..models::OptionalContact::default()
         };
 
         let contact_id = data_repo
@@ -395,7 +395,7 @@ mod tests {
         let test_contact = models::OptionalContact {
             first_name: Some("Jason".to_string()),
             last_name: Some("Ribble".to_string()),
-            ..models::OptionalContact::template()
+            ..models::OptionalContact::default()
         };
 
         let contact_id = data_repo
@@ -419,7 +419,7 @@ mod tests {
 
         let test_contact = models::OptionalContact {
             first_name: Some("Jason".to_string()),
-            ..models::OptionalContact::template()
+            ..models::OptionalContact::default()
         };
 
         let contact_id = data_repo.save_optional_contact(test_contact).await?;
@@ -428,7 +428,7 @@ mod tests {
 
         let another_contact = models::OptionalContact {
             first_name: Some("Alice".to_string()),
-            ..models::OptionalContact::template()
+            ..models::OptionalContact::default()
         };
 
         let contact_id = data_repo.save_optional_contact(another_contact).await?;
