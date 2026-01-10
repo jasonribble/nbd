@@ -30,13 +30,13 @@ mod tests {
     }
 
     fn create_lewis_carroll_contact() -> anyhow::Result<Contact> {
-        Ok(Contact::builder()
+        Contact::builder()
             .first_name("Lewis")
             .last_name("Carroll")
             .email("lewis@wonderland.com")
             .phone_number("777-777-7777")
             .birthday("1832-1-27")
-            .build()?)
+            .build()
     }
 
     fn get_expected_table_header() -> Vec<&'static str> {

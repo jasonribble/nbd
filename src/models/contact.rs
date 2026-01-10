@@ -1,5 +1,4 @@
 use crate::utils;
-use crate::utils::AppError;
 use chrono::{DateTime, NaiveDate, Utc};
 use tabled::Tabled;
 
@@ -72,7 +71,7 @@ impl ContactBuilder {
     ///
     /// # Panics
     /// This will panic if `NaiveDate` fails
-    pub fn build(self) -> Result<Contact, AppError> {
+    pub fn build(self) -> anyhow::Result<Contact, anyhow::Error> {
         let first_name = self.first_name.unwrap_or_default();
         let last_name = self.last_name.unwrap_or_default();
         let email = self.email.unwrap_or_default();
@@ -101,23 +100,24 @@ impl Contact {
         email: &str,
         phone_number: &str,
         birthday: &str,
-    ) -> Result<Self, AppError> {
+    ) -> anyhow::Result<Self> {
         let display_name = format!("{first_name} {last_name}");
 
         if utils::is_not_valid_email(email) && !email.is_empty() {
-            return Err(AppError::InvalidEmail(email.to_owned()));
+            anyhow::bail!("{} is invalid", email.to_owned())
         }
 
         if utils::is_not_valid_phone_number(phone_number) && !phone_number.is_empty() {
-            return Err(AppError::InvalidPhoneNumber(phone_number.to_owned()));
+            anyhow::bail!("{} is invalid", phone_number.to_owned())
         }
 
         let birthday = if birthday.trim().is_empty() {
             NaiveDate::from_ymd_opt(0, 1, 1).expect("Expected default date")
         } else {
             let Ok(parsed_date) = NaiveDate::parse_from_str(birthday, "%Y-%m-%d") else {
-                return Err(AppError::InvalidBirthday(birthday.to_string()));
+                anyhow::bail!("{} is invalid", birthday.to_string())
             };
+
             parsed_date
         };
 
@@ -271,19 +271,17 @@ impl ConstructBuilder {
     /// # Errors
     ///
     /// This errors if there is an invalid email or phone number, missing id, or all fields are empty
-    pub fn build(self) -> Result<Construct, AppError> {
-        let id = self.id.ok_or(AppError::EmptyUpdate)?;
+    pub fn build(self) -> anyhow::Result<Construct> {
+        let id = self.id.ok_or_else(|| anyhow::anyhow!("ID is required"))?;
 
         let maybe_email = self.email.as_deref().unwrap_or("");
         if utils::is_not_valid_email(maybe_email) && self.email.is_some() {
-            return Err(AppError::InvalidEmail(self.email.unwrap_or_default()));
+            anyhow::bail!("{} is invalid", maybe_email)
         }
 
         let maybe_phone = self.phone_number.as_deref().unwrap_or("");
         if utils::is_not_valid_phone_number(maybe_phone) && self.phone_number.is_some() {
-            return Err(AppError::InvalidPhoneNumber(
-                self.phone_number.unwrap_or_default(),
-            ));
+            anyhow::bail!("{} is invalid", maybe_phone)
         }
 
         let optional_contact = Optional {
@@ -301,7 +299,7 @@ impl ConstructBuilder {
         };
 
         if optional_contact.is_empty() {
-            return Err(AppError::EmptyUpdate);
+            anyhow::bail!("No fields provided for update")
         }
 
         Ok(Construct {
@@ -336,7 +334,7 @@ impl Construct {
         phone_number: Option<String>,
         display_name: Option<String>,
         birthday: Option<NaiveDate>,
-    ) -> Result<Self, AppError> {
+    ) -> anyhow::Result<Self> {
         let mut builder = ConstructBuilder::new().id(id);
 
         if let Some(first_name) = first_name {
@@ -379,7 +377,6 @@ impl Construct {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::AppError;
 
     use super::{Construct, Contact};
 
@@ -509,7 +506,9 @@ mod tests {
             None,
         );
         assert!(result.is_err());
-        assert!(matches!(result, Err(AppError::InvalidEmail(email)) if email == "invalid@example"));
+
+        let err = result.expect_err("Expected invalid email to return an error");
+        assert!(err.to_string().contains("invalid"));
     }
 
     #[test]
@@ -527,9 +526,8 @@ mod tests {
         println!("{result:?}");
         assert!(result.is_err());
 
-        assert!(
-            matches!(result, Err(AppError::InvalidPhoneNumber(phone_number)) if phone_number == "123-123-12345")
-        );
+        let err = result.expect_err("Expected invalid phone number to return an error");
+        assert!(err.to_string().contains("invalid"));
     }
 
     #[test]
@@ -550,7 +548,7 @@ mod tests {
 
     #[test]
     fn should_return_error_when_creating_contact_with_invalid_birthday() {
-        let invalid_birthday = "1970-13-32"; // Invalid date
+        let invalid_birthday = "1970-13-32";
         let contact_result = Contact::new(
             "Satoshi",
             "Nakamoto",
@@ -559,8 +557,7 @@ mod tests {
             invalid_birthday,
         );
 
-        assert!(
-            matches!(contact_result, Err(AppError::InvalidBirthday(birthday)) if birthday == invalid_birthday)
-        );
+        let err = contact_result.expect_err("Expected invalid birthday to return an error");
+        assert!(err.to_string().contains("invalid"));
     }
 }
