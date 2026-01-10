@@ -4,7 +4,6 @@ mod tests {
     use nbd::{
         db::{ContactRepo, Repo},
         models::Contact,
-        utils::DatabaseError,
     };
     use serial_test::serial;
     use sqlx::SqlitePool;
@@ -49,7 +48,7 @@ mod tests {
         ]
     }
 
-    async fn clean_database() -> Result<(), DatabaseError> {
+    async fn clean_database() -> anyhow::Result<()> {
         let database_url = get_database_url();
         let pool = SqlitePool::connect(&database_url).await?;
 
