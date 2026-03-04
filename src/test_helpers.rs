@@ -8,6 +8,7 @@ use std::fs;
 /// # Panics
 /// If the in-memory database fails, it will panic
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 pub async fn setup_in_memory_db() -> SqlitePool {
     let pool = SqlitePoolOptions::new()
         .connect("sqlite::memory:")
@@ -42,6 +43,7 @@ fn get_migration_entries() -> Result<Vec<std::path::PathBuf>, anyhow::Error> {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
 
@@ -49,7 +51,7 @@ mod tests {
     fn current_number_of_migrations() {
         let migrations = 6;
 
-        let entries = get_migration_entries().expect("Failed to get migration");
+        let entries = get_migration_entries().unwrap();
 
         assert_eq!(migrations, entries.len());
     }

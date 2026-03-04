@@ -172,6 +172,8 @@ impl ContactRepo for Repo<SqlitePool> {
 
         Ok(contact_id)
     }
+
+    #[allow(clippy::arithmetic_side_effects)]
     async fn import_contacts_by_csv(&self, filename: &str) -> anyhow::Result<i64> {
         let contacts = utils::process_csv_to_contacts(filename)?;
 
@@ -186,6 +188,9 @@ impl ContactRepo for Repo<SqlitePool> {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
+#[allow(clippy::panic_in_result_fn)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
     use mockall::predicate::*;
@@ -505,7 +510,7 @@ mod tests {
 
         let contacts = data_repo.get_all_contacts().await?;
 
-        let aldous_huxley_birthday = contacts[0].contact.birthday;
+        let aldous_huxley_birthday = contacts.first().unwrap().contact.birthday;
 
         assert_eq!(
             aldous_huxley_birthday,
@@ -527,14 +532,14 @@ mod tests {
 
         let contacts = data_repo.get_all_contacts().await?;
 
-        let aldous_huxley_birthday = contacts[0].contact.birthday;
+        let aldous_huxley_birthday = contacts.first().unwrap().contact.birthday;
 
         assert_eq!(
             aldous_huxley_birthday,
             chrono::NaiveDate::from_ymd_opt(1894, 7, 26).expect("Valid date")
         );
 
-        let cs_lewis_birthday = contacts[2].contact.birthday;
+        let cs_lewis_birthday = contacts.get(2).unwrap().contact.birthday;
 
         assert_eq!(
             cs_lewis_birthday,

@@ -73,6 +73,10 @@ fn csv_to_contacts(path: &Path) -> anyhow::Result<Vec<OptionalContact>> {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
+#[allow(clippy::panic_in_result_fn)]
+#[allow(clippy::panic)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
     use std::io::Write;
@@ -197,14 +201,16 @@ mod tests {
         let temp_csv = temp_csv.path();
         let contacts = csv_to_contacts(temp_csv);
 
-        let alice = &contacts.expect("At least one contact")[0];
+        let alice = contacts.unwrap();
+        let alice = alice.first();
+
         let expected_contact = OptionalContact {
             first_name: Some("Alice".to_string()),
             phone_number: Some("1234567890".to_string()),
             ..OptionalContact::default()
         };
 
-        assert_eq!(alice, &expected_contact);
+        assert_eq!(*alice.unwrap(), expected_contact);
 
         Ok(())
     }
@@ -239,7 +245,7 @@ mod tests {
         ];
 
         for (index, expected_contact) in expected_contacts.iter().enumerate() {
-            assert_eq!(&contacts[index], expected_contact);
+            assert_eq!(contacts.get(index).unwrap(), expected_contact);
         }
 
         Ok(())

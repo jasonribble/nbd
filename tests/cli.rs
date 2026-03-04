@@ -1,6 +1,8 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic_in_result_fn)]
 #[cfg(test)]
 mod tests {
-    use assert_cmd::Command;
+    use anyhow::Result;
+    use assert_cmd::{cargo, Command};
     use nbd::{
         db::{ContactRepo, Repo},
         models::Contact,
@@ -9,7 +11,7 @@ mod tests {
     use sqlx::SqlitePool;
 
     fn create_command() -> Command {
-        Command::cargo_bin(get_cli_name()).expect("Command `nbd` is located")
+        cargo::cargo_bin_cmd!("nbd-cli")
     }
 
     fn get_cli_name() -> String {
@@ -22,13 +24,13 @@ mod tests {
         std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:contacts.db".to_string())
     }
 
-    async fn create_repo() -> anyhow::Result<Repo<SqlitePool>> {
+    async fn create_repo() -> Result<Repo<SqlitePool>> {
         let database_url = get_database_url();
         let pool = SqlitePool::connect(&database_url).await?;
         Ok(Repo::new(pool))
     }
 
-    fn create_lewis_carroll_contact() -> anyhow::Result<Contact> {
+    fn create_lewis_carroll_contact() -> Result<Contact> {
         Contact::builder()
             .first_name("Lewis")
             .last_name("Carroll")
@@ -48,7 +50,7 @@ mod tests {
         ]
     }
 
-    async fn clean_database() -> anyhow::Result<()> {
+    async fn clean_database() -> Result<()> {
         let database_url = get_database_url();
         let pool = SqlitePool::connect(&database_url).await?;
 
@@ -128,7 +130,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_delete_a_contact_when_one_is_present() -> anyhow::Result<()> {
+    async fn should_delete_a_contact_when_one_is_present() -> Result<()> {
         clean_database().await.expect("Failed to clean database");
 
         let data_repo = create_repo().await?;
@@ -151,7 +153,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_show_error_when_deleting_nonexistent_contact() -> anyhow::Result<()> {
+    async fn should_show_error_when_deleting_nonexistent_contact() -> Result<()> {
         clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
@@ -214,7 +216,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_import_one_contact_when_importing_alice_csv() -> anyhow::Result<()> {
+    async fn should_import_one_contact_when_importing_alice_csv() -> Result<()> {
         clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
@@ -235,7 +237,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_import_example_csv_with_three_rows() -> anyhow::Result<()> {
+    async fn should_import_example_csv_with_three_rows() -> Result<()> {
         clean_database().await?;
         let mut cmd = create_command();
         cmd.arg("import").arg("tests/fixtures/example.csv");
@@ -269,7 +271,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_say_no_contacts_when_contacts_are_empty() -> anyhow::Result<()> {
+    async fn should_say_no_contacts_when_contacts_are_empty() -> Result<()> {
         clean_database().await?;
 
         let mut cmd = create_command();
@@ -283,7 +285,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_show_one_contact_when_one_contact_available() -> anyhow::Result<()> {
+    async fn should_show_one_contact_when_one_contact_available() -> Result<()> {
         clean_database().await?;
 
         let data_repo = create_repo().await?;
@@ -305,7 +307,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_show_two_contact_when_two_contact_available() -> anyhow::Result<()> {
+    async fn should_show_two_contact_when_two_contact_available() -> Result<()> {
         clean_database().await.expect("Failed to clean database");
 
         let data_repo = create_repo().await?;
@@ -345,7 +347,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_set_birthday_when_provided() -> anyhow::Result<()> {
+    async fn should_set_birthday_when_provided() -> Result<()> {
         clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
@@ -373,7 +375,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_allow_only_first_name_when_creating() -> anyhow::Result<()> {
+    async fn should_allow_only_first_name_when_creating() -> Result<()> {
         clean_database().await.expect("Failed to clean database");
 
         let mut cmd = create_command();
@@ -388,7 +390,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn should_say_already_initialized_when_db_exists() -> anyhow::Result<()> {
+    async fn should_say_already_initialized_when_db_exists() -> Result<()> {
         let database_url = get_database_url();
         let _ = SqlitePool::connect(&database_url).await?;
 

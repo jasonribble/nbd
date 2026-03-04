@@ -1,4 +1,4 @@
-use crate::utils;
+use crate::utils::{self, default_date};
 use chrono::{DateTime, NaiveDate, Utc};
 use tabled::Tabled;
 
@@ -112,10 +112,10 @@ impl Contact {
         }
 
         let birthday = if birthday.trim().is_empty() {
-            NaiveDate::from_ymd_opt(0, 1, 1).expect("Expected default date")
+            default_date()
         } else {
             let Ok(parsed_date) = NaiveDate::parse_from_str(birthday, "%Y-%m-%d") else {
-                anyhow::bail!("{} is invalid", birthday.to_string())
+                anyhow::bail!("{birthday} is invalid")
             };
 
             parsed_date
@@ -276,12 +276,12 @@ impl ConstructBuilder {
 
         let maybe_email = self.email.as_deref().unwrap_or("");
         if utils::is_not_valid_email(maybe_email) && self.email.is_some() {
-            anyhow::bail!("{} is invalid", maybe_email)
+            anyhow::bail!("{maybe_email} is invalid")
         }
 
         let maybe_phone = self.phone_number.as_deref().unwrap_or("");
         if utils::is_not_valid_phone_number(maybe_phone) && self.phone_number.is_some() {
-            anyhow::bail!("{} is invalid", maybe_phone)
+            anyhow::bail!("{maybe_phone} is invalid")
         }
 
         let optional_contact = Optional {
@@ -376,6 +376,7 @@ impl Construct {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
 
     use super::{Construct, Contact};
