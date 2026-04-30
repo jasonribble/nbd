@@ -403,4 +403,22 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    #[serial]
+    async fn should_init_create_database_on_fresh_system() -> Result<()> {
+        let temp = tempfile::TempDir::new()?;
+        let config_dir = temp.path().to_path_buf();
+
+        let mut cmd = create_command();
+        cmd.env("NBD_CONFIG_DIR", &config_dir);
+        cmd.arg("init");
+
+        cmd.assert().success();
+
+        let db_path = config_dir.join("contacts.db");
+        assert!(db_path.exists(), "expected database file at {db_path:?}");
+
+        Ok(())
+    }
 }

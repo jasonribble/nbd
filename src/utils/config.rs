@@ -21,13 +21,28 @@ pub fn resolve_config_dir(
     )
 }
 
+
+#[must_use]
 pub fn build_database_path(config_dir: &Path) -> PathBuf {
     config_dir.join("contacts.db")
+}
+
+
+#[must_use]
+pub fn build_database_url(path: &Path) -> String {
+    format!("sqlite://{}", path.to_string_lossy())
 }
 
 #[must_use]
 pub fn is_already_initialized(db_path: &Path) -> bool {
     db_path.exists()
+}
+
+/// # Errors
+///
+///  Will return filesystem errors
+pub fn ensure_config_dir(target: &PathBuf) -> anyhow::Result<(), std::io::Error> {
+    std::fs::create_dir_all(target)
 }
 
 #[cfg(test)]
@@ -57,4 +72,24 @@ mod tests {
 
         assert_eq!(result, PathBuf::from("/home/user/.config/nbd/contacts.db"));
     }
+
+    #[test]
+    fn ensure_config_dir_creates_dir_when_missing() {
+        let temp = tempfile::TempDir::new().unwrap();
+        let target = temp.path().join("nbd");
+        assert!(!target.exists());
+
+        ensure_config_dir(&target).unwrap();
+
+        assert!(target.exists());
+        assert!(target.is_dir());
+    }
+
+    #[test]
+    fn build_database_url_formats_sqlite_url_from_path() {
+        let path = PathBuf::from("/tmp/nbd/contacts.db");
+        let url = build_database_url(&path);
+        assert_eq!(url, "sqlite:///tmp/nbd/contacts.db");
+    }
 }
+
