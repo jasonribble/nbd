@@ -15,7 +15,7 @@ pub fn resolve_config_dir(
         || {
             default_base_path
                 .unwrap_or_else(|| std::env::current_dir().unwrap_or_default())
-                .join("base")
+                .join("nbd")
         },
         PathBuf::from,
     )
