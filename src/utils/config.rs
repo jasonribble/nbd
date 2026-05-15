@@ -21,12 +21,10 @@ pub fn resolve_config_dir(
     )
 }
 
-
 #[must_use]
 pub fn build_database_path(config_dir: &Path) -> PathBuf {
     config_dir.join("contacts.db")
 }
-
 
 #[must_use]
 pub fn build_database_url(path: &Path) -> String {
@@ -38,10 +36,17 @@ pub fn is_already_initialized(db_path: &Path) -> bool {
     db_path.exists()
 }
 
+/// Creates `target` and all of its parent directories if they do not exist.
+///
 /// # Errors
 ///
-///  Will return filesystem errors
-pub fn ensure_config_dir(target: &PathBuf) -> anyhow::Result<(), std::io::Error> {
+/// Returns [`std::io::Error`] if:
+/// - The process lacks permission to create the directory.
+/// - A component of the path exists but is not a directory.
+/// - An OS-level I/O failure occurs (e.g., disk full).
+///
+/// Does **not** error if the directory already exists.
+pub fn ensure_config_dir(target: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(target)
 }
 
@@ -92,4 +97,3 @@ mod tests {
         assert_eq!(url, "sqlite:///tmp/nbd/contacts.db");
     }
 }
-

@@ -412,10 +412,10 @@ mod tests {
 
         let mut cmd = create_command();
         cmd.env("NBD_CONFIG_DIR", &config_dir);
+
         cmd.arg("init");
 
         cmd.assert().success();
-
         let db_path = config_dir.join("contacts.db");
         assert!(db_path.exists(), "expected database file at {db_path:?}");
 
