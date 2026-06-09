@@ -226,7 +226,7 @@ mod tests {
         let temp_csv = temp_csv.path();
         let contacts = csv_to_contacts(temp_csv)?;
 
-        let expected_contacts = vec![
+        let expected_contacts: Vec<OptionalContact> = vec![
             OptionalContact {
                 first_name: Some("Alice".to_string()),
                 phone_number: Some("1234567890".to_string()),

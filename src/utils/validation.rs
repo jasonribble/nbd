@@ -5,7 +5,7 @@ fn is_valid_phone_number(phone: &str) -> bool {
         r"^\+?1?\s*(\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}(?:\s*(?:ext|x|ex)\.?\s*\d+)?$";
     let phone_regex = Regex::new(phone_pattern);
 
-    phone_regex.map(|r| r.is_match(phone)).unwrap_or(false)
+    phone_regex.is_ok_and(|r| r.is_match(phone))
 }
 
 #[must_use]
@@ -17,7 +17,7 @@ fn is_valid_email(email: &str) -> bool {
     let email_pattern = r"^[\w\d][-\w\d+.]*@((?:[-\w\d]+\.)+[-\w\d]{2,})$";
     let email_regex = Regex::new(email_pattern);
 
-    email_regex.map(|r| r.is_match(email)).unwrap_or(false)
+    email_regex.is_ok_and(|r| r.is_match(email))
 }
 
 #[must_use]
