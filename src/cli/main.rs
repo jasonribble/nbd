@@ -13,14 +13,29 @@ use sqlx::SqlitePool;
 async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
+    let cli = Cli::parse();
+
+    if matches!(cli.command, Commands::Init) {
+        let config_dir = nbd::utils::get_config_dir();
+
+        let db_path = nbd::utils::build_database_path(&config_dir);
+
+        if nbd::utils::is_already_initialized(&db_path) {
+            print!("A contact book has already been initialized");
+            return Ok(());
+        }
+
+        nbd::db::setup::initialize(&config_dir).await?;
+
+        return Ok(());
+    }
+
     let pool = SqlitePool::connect(&env::var("DATABASE_URL")?).await?;
     let data_repo = Repo::new(pool);
     let actions = Actions::new(data_repo);
 
-    let cli = Cli::parse();
-
     match &cli.command {
-        Commands::Init => actions.init_contact_book().await?,
+        Commands::Init => {} // handled above (branch early)
         Commands::Create(value) => actions.create_contact(value).await?,
         Commands::Edit(value) => actions.edit_contact(value).await?,
         Commands::Show => actions.show_all_contacts().await?,
