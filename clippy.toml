@@ -1,0 +1,8 @@
+# Panics are a legitimate failure signal in tests — a failed assertion or an
+# `.unwrap()` on a setup step IS the test failing. These options relax the
+# panic-family restriction lints ONLY inside `#[cfg(test)]` code and test
+# functions. Production code stays held to the strict policy in Cargo.toml.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-indexing-slicing-in-tests = true

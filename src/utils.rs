@@ -4,9 +4,7 @@ mod date;
 mod validation;
 
 pub use config::{
-    build_database_url,
-    ensure_config_dir,
-    get_config_dir,
+    build_database_path, build_database_url, ensure_config_dir, get_config_dir,
     is_already_initialized,
 };
 pub use csv::process_csv_to_contacts;
