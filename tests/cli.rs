@@ -397,6 +397,8 @@ mod tests {
         let mut cmd = create_command();
         cmd.arg("init");
 
+        cmd.arg("init");
+
         cmd.assert().success().stdout(predicates::str::contains(
             "A contact book has already been initialized",
         ));
