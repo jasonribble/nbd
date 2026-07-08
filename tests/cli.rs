@@ -391,20 +391,19 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn should_say_already_initialized_when_db_exists() -> Result<()> {
-        let database_url = get_database_url();
-        let _ = SqlitePool::connect(&database_url).await?;
+        let mut first_cmd = create_command();
+        first_cmd.arg("init");
+        first_cmd.assert().success();
 
-        let mut cmd = create_command();
+        let mut second_cmd = create_command();
+        second_cmd.arg("init");
 
-        cmd.arg("init");
-
-        let mut cmd = create_command();
-
-        cmd.arg("init");
-
-        cmd.assert().success().stdout(predicates::str::contains(
-            "A contact book has already been initialized",
-        ));
+        second_cmd
+            .assert()
+            .success()
+            .stdout(predicates::str::contains(
+                "A contact book has already been initialized",
+            ));
 
         Ok(())
     }
