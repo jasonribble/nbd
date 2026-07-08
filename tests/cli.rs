@@ -395,7 +395,10 @@ mod tests {
         let _ = SqlitePool::connect(&database_url).await?;
 
         let mut cmd = create_command();
+
         cmd.arg("init");
+
+        let mut cmd = create_command();
 
         cmd.arg("init");
 
