@@ -21,7 +21,7 @@ mod tests {
     }
 
     fn get_database_url() -> String {
-        std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:contacts.db".to_string())
+        std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://data/contacts.db".to_string())
     }
 
     async fn create_repo() -> Result<Repo<SqlitePool>> {
