@@ -14,8 +14,8 @@ The world needs a privacy-first, offline-first, personal contact manager.
 
 This Rust project requires the following:
 
-- Cargo
-- sqlx-cli
+- [rustup](https://rustup.rs)
+- [sqlx-cli](https://github.com/transact-rs/sqlx)
 
 You can also use the nix flake. Install nix through the [nix-installer](https://github.com/DeterminateSystems/nix-installer). Once installed, run:
 
@@ -29,15 +29,15 @@ You can also use the nix flake. Install nix through the [nix-installer](https://
 cp .env.example .env
 ```
 
-Optionally update environment variables
+Optionally update environment variables. I recommend keeping `NBD_CONFIG_DIR` set to the default in `.env.example` so you don't collide with your production use of `nbd`.
 
-2. Create the database.
+1. Create the database.
 
 ```
 sqlx db create
 ```
 
-3. Run sql migrations
+1. Run sqlx migrations
 
 ```
 sqlx migrate run
@@ -66,13 +66,13 @@ Options:
 
 For example
 
-```
+```bash
 cargo run create --first-name test --last-name last --email test@ttest.com --phone-number 123-231-1122 --birthday 1970-01-01
 ```
 
 Then, you can see the contact using the `show` command
 
-```
+```bash
 cargo run show
 ```
 
@@ -93,7 +93,7 @@ Options:
 
 For example
 
-```
+```bash
 cargo run edit 1 -f Jason
 ```
 
