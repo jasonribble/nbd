@@ -1,10 +1,13 @@
 /target
 *.db
 .env
-contacts.db-*
 
+data/*
+!data/.gitkeep
 
 CLAUDE.md
 .claude
+
+
 
 # Commit .sqlx/ files to enable builds without database connection
