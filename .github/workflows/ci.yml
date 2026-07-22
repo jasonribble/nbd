@@ -43,11 +43,6 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Run migrations
-        run: sqlx migrate run
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
       - name: Check sqlx queries are up to date
         run: cargo sqlx prepare --check -- --all-targets --all-features
         env:

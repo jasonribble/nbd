@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use sqlx::migrate::MigrateDatabase;
 use sqlx::Sqlite;
+use sqlx::{migrate::MigrateDatabase, SqlitePool};
 
 use crate::utils::{build_database_path, build_database_url, ensure_config_dir};
 
@@ -10,6 +10,10 @@ use crate::utils::{build_database_path, build_database_url, ensure_config_dir};
 /// Will return sqlite errors
 pub async fn create_database(url: &str) -> anyhow::Result<()> {
     Sqlite::create_database(url).await?;
+
+    let pool = SqlitePool::connect(url).await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
+
     Ok(())
 }
 
